@@ -5,7 +5,6 @@
       <module fileurl="file://$PROJECT_DIR$/AnimalView.iml" filepath="$PROJECT_DIR$/AnimalView.iml" />
       <module fileurl="file://$PROJECT_DIR$/PhotoView-release/PhotoView-release.iml" filepath="$PROJECT_DIR$/PhotoView-release/PhotoView-release.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/PhotoView-release/library-release.iml" filepath="$PROJECT_DIR$/PhotoView-release/library-release.iml" />
     </modules>
   </component>
 </project>
