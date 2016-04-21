@@ -3,6 +3,7 @@ package jiaozhu.com.animalview.support;
 import android.app.Application;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,13 @@ public class CApplication extends Application {
         super.onCreate();
 
         initPath(Constants.ROOT_DIR, Constants.CACHE_DIR);
+        if (!Constants.NO_MEDIA.exists()) {
+            try {
+                Constants.NO_MEDIA.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void initPath(File... files) {

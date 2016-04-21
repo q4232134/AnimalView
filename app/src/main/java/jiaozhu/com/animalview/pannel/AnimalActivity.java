@@ -9,6 +9,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -69,10 +70,10 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         setContentView(R.layout.activity_animal);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mLayout = (FrameLayout) findViewById(R.id.layout);
         mSeekBar = (SeekBar) findViewById(R.id.seek_bar);
         mToolBar = findViewById(R.id.toolsbar);
-        mLayout.setSystemUiVisibility(HIDE_UI);
         currentIndex = getIntent().getIntExtra(INDEX, 0);
         currentDir = ((CApplication) getApplication()).list.get(currentIndex).getFile();
         mViewPager = (HackyViewPager) findViewById(R.id.view_pager);
@@ -81,6 +82,7 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         adapter.setOnViewTapListener(this);
         mViewPager.setAdapter(adapter);
         mViewPager.addOnPageChangeListener(this);
+        showUI();
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progress = -1;
@@ -113,6 +115,12 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         super.onStart();
     }
 
+    /**
+     * 显示删除对话框
+     *
+     * @param file     需要删除的目录
+     * @param runnable 删除完成后的动作
+     */
     private void showDialog(final File file, final Runnable runnable) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("删除");
@@ -129,6 +137,9 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
     }
 
 
+    /**
+     * 刷新
+     */
     private void fresh() {
         list.clear();
         File[] tempList = currentDir.listFiles(new FilenameFilter() {
@@ -158,7 +169,6 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
     }
 
 
-    //TODO
     @Override
     public void onViewTap(View view, float x, float y) {
         switch (getTouchType(x, y)) {
@@ -175,6 +185,9 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         }
     }
 
+    /**
+     * 显示工具栏方法
+     */
     Runnable showToolbar = new Runnable() {
         @Override
         public void run() {
@@ -182,18 +195,43 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         }
     };
 
+    /**
+     * 自动隐藏工具栏方法
+     */
+    Runnable autoHideToolbar = new Runnable() {
+        @Override
+        public void run() {
+            hideUI();
+        }
+    };
+
+    /**
+     * 改变工具栏状态
+     */
     private void changeUi() {
         if (uiShowed) {
-            mLayout.setSystemUiVisibility(HIDE_UI);
-            mToolBar.setVisibility(View.INVISIBLE);
-            uiShowed = false;
+            hideUI();
         } else {
-            mLayout.setSystemUiVisibility(SHOW_UI);
-            handler.postDelayed(showToolbar, 300);
-            uiShowed = true;
+            showUI();
         }
     }
 
+    private void showUI() {
+        mLayout.setSystemUiVisibility(SHOW_UI);
+        handler.postDelayed(showToolbar, 300);
+        uiShowed = true;
+        handler.postDelayed(autoHideToolbar, Constants.HIDE_UI_DELAY);
+    }
+
+    private void hideUI() {
+        mLayout.setSystemUiVisibility(HIDE_UI);
+        mToolBar.setVisibility(View.INVISIBLE);
+        uiShowed = false;
+    }
+
+    /**
+     * 到下一页
+     */
     private void toNextPage() {
         if (mViewPager.getCurrentItem() >= adapter.getCount() - 1) {
             setAnimal(currentIndex + 1);
@@ -202,6 +240,9 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         }
     }
 
+    /**
+     * 到上一页
+     */
     private void toPreviousPage() {
         if (mViewPager.getCurrentItem() <= 0) {
             setAnimal(currentIndex - 1);
@@ -210,6 +251,11 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         }
     }
 
+    /**
+     * 设置当前显示的目录
+     *
+     * @param index
+     */
     private void setAnimal(int index) {
         List<FileModel> list = ((CApplication) getApplication()).list;
         if (index < 0) {
@@ -226,6 +272,10 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         fresh();
     }
 
+    /**
+     * 点击删除按钮
+     * @param view
+     */
     public void onDeleteClick(View view) {
         showDialog(currentDir, new Runnable() {
             @Override
@@ -238,7 +288,10 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
 
     }
 
-
+    /**
+     * 点击
+     * @param view
+     */
     public void onNextClick(View view) {
         setAnimal(currentIndex + 1);
 
@@ -279,6 +332,17 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
     @Override
     public void onPageScrollStateChanged(int state) {
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     static class ImagePagerAdapter extends PagerAdapter {

@@ -4,7 +4,6 @@ package jiaozhu.com.animalview.commonTools;
  * Created by Administrator on 2015/5/28.
  */
 public class Log {
-    //这是一个测试
     public static final int VERBOSE = 2;
     public static final int DEBUG = 3;
     public static final int INFO = 4;

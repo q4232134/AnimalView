@@ -73,9 +73,8 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            default:
         }
         return super.onOptionsItemSelected(item);
     }
@@ -91,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         if (tempList != null) {
             for (File temp : tempList) {
                 if (temp.isDirectory()) {
+                    if (temp.getName().startsWith(".")) continue;
                     FileModel model = new FileModel();
                     model.setFile(temp);
                     model.setStatus(canShow(temp));

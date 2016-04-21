@@ -11,12 +11,18 @@ public class Constants {
     public static String ROOT_DIR_PATH = Environment.getExternalStorageDirectory().getPath() + File.separator + "AnimalView";
     public static File ROOT_DIR = new File(ROOT_DIR_PATH);
     public static File CACHE_DIR = new File(ROOT_DIR_PATH + File.separator + ".cache");
+    public static File NO_MEDIA = new File(ROOT_DIR_PATH + File.separator + ".nomedia");
 
     /**
      * 触摸中间部分所占比例
      */
     public static final float CENTER_WIDTH = 0.4f;
     public static final float CENTER_HEIGHT = 0.4f;
+
+    /**
+     * 隐藏界面延迟时间
+     */
+    public static final long HIDE_UI_DELAY = 3500;
     /**
      * 数据库名称
      */
