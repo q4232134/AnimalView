@@ -1,6 +1,8 @@
 package jiaozhu.com.animalview.pannel;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +16,8 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Stack;
 
@@ -51,6 +55,8 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         stack.push(rootFile);
         recyclerView = (RecyclerView) findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        //androidL以下需要在这里设置
+        recyclerView.setNestedScrollingEnabled(false);
         adapter = new FileAdapter(list, this);
         adapter.setOnItemClickListener(this);
 //        adapter.setSelectorMode(adapter.MODE_MULTI);
@@ -101,6 +107,13 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 }
             }
         }
+        Collections.sort(list, new Comparator<FileModel>() {
+            @TargetApi(Build.VERSION_CODES.KITKAT)
+            @Override
+            public int compare(FileModel m1, FileModel m2) {
+                return Byte.compare(m2.getStatus(), m1.getStatus());
+            }
+        });
         adapter.notifyDataSetChanged();
     }
 

@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -92,6 +93,7 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
                 if (fromUser) {
                     this.progress = progress;
                     freshPageNum();
+                    delayedRun(Constants.HIDE_UI_DELAY);
                 }
             }
 
@@ -128,7 +130,7 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                System.out.println(Tools.deleteDir(currentDir));
+                Tools.deleteDir(currentDir);
                 if (runnable != null) runnable.run();
             }
         });
@@ -157,6 +159,7 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
             for (File temp : tempList) {
                 list.add(temp);
             }
+        setTitle(currentDir.getName());
         mSeekBar.setMax(list.size() - 1);
         mSeekBar.setProgress(0);
         freshPageNum();
@@ -220,7 +223,7 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         mLayout.setSystemUiVisibility(SHOW_UI);
         handler.postDelayed(showToolbar, 300);
         uiShowed = true;
-        handler.postDelayed(autoHideToolbar, Constants.HIDE_UI_DELAY);
+        delayedRun(Constants.HIDE_UI_DELAY);
     }
 
     private void hideUI() {
@@ -268,15 +271,17 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         }
         currentDir = list.get(index).getFile();
         currentIndex = index;
-        System.out.println(currentDir.getName());
+        Snackbar.make(mViewPager, currentDir.getName(), Snackbar.LENGTH_SHORT).show();
         fresh();
     }
 
     /**
      * 点击删除按钮
+     *
      * @param view
      */
     public void onDeleteClick(View view) {
+        delayedRun(Constants.HIDE_UI_DELAY);
         showDialog(currentDir, new Runnable() {
             @Override
             public void run() {
@@ -290,12 +295,12 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
 
     /**
      * 点击
+     *
      * @param view
      */
     public void onNextClick(View view) {
         setAnimal(currentIndex + 1);
-
-
+        delayedRun(Constants.HIDE_UI_DELAY);
     }
 
     /**
@@ -316,6 +321,12 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         if (x > minX && x < maxX && y > minY && y < maxY) return TOUCH_CENTER;
         if (x < minX || (x < maxX && y > maxY)) return TOUCH_FRONT;
         return TOUCH_AFTER;
+    }
+
+
+    private void delayedRun(long time) {
+        handler.removeCallbacks(autoHideToolbar);
+        handler.postDelayed(autoHideToolbar, time);
     }
 
     @Override
