@@ -12,6 +12,7 @@ public class Constants {
     public static File ROOT_DIR = new File(ROOT_DIR_PATH);
     public static File CACHE_DIR = new File(ROOT_DIR_PATH + File.separator + ".cache");
     public static File NO_MEDIA = new File(ROOT_DIR_PATH + File.separator + ".nomedia");
+    public static File DELETE_LOG = new File(ROOT_DIR_PATH + File.separator + "delete.log");
 
     /**
      * 触摸中间部分所占比例

@@ -516,6 +516,17 @@ public class Tools {
     }
 
     /**
+     * 删除漫画目录(生成删除记录)
+     *
+     * @param file
+     * @return
+     */
+    public static boolean deleteAnimal(File file) {
+        writeFile(Constants.DELETE_LOG, ">>:" + file.getName() + "\n");
+        return deleteDir(file);
+    }
+
+    /**
      * 递归删除目录
      *
      * @param file
