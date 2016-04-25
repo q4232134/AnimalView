@@ -294,11 +294,11 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
     }
 
     @Override
-    protected void onStop() {
-        ((CApplication) getApplication()).markFile = currentModel.getFile();
-        ((CApplication) getApplication()).markPage = mViewPager.getCurrentItem();
-        super.onStop();
+    protected void onPause() {
+        ((CApplication) getApplication()).saveAnimal(currentModel.getFile(), mViewPager.getCurrentItem());
+        super.onPause();
     }
+
 
     /**
      * 点击

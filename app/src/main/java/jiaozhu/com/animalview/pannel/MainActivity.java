@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         fresh();
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -101,13 +102,14 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                     FileModel model = new FileModel();
                     model.setFile(temp);
                     model.setStatus(getFileStatus(temp));
-                    list.add(model);
-                    if (file.compareTo(historyFile) == 0) {
+                    //在历史文件路径中的file全部标示
+                    if (historyFile.getPath().startsWith(temp.getPath())) {
                         model.setHistory(true);
                     }
                     if (model.getStatus() == FileModel.STATUS_SHOW) {
                         commList.add(model);
                     }
+                    list.add(model);
                 }
             }
         }
@@ -163,6 +165,10 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 Intent i = new Intent();
                 i.setClass(this, AnimalActivity.class);
                 i.putExtra(AnimalActivity.INDEX, commList.indexOf(model));
+                //如果有历史记录则进行载入
+                if (model.isHistory()) {
+                    i.putExtra(AnimalActivity.PAGE_NUM, ((CApplication) getApplication()).markPage);
+                }
                 startActivity(i);
                 break;
             case FileModel.STATUS_OPEN:

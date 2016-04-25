@@ -44,4 +44,10 @@ public class CApplication extends Application {
         }
     }
 
+    public void saveAnimal(File file, int pageNum) {
+        Preferences.getInstance().setHistory(file, pageNum);
+        this.markFile = file;
+        this.markPage = pageNum;
+    }
+
 }
