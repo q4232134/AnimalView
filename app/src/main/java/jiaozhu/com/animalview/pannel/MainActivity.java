@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         if (!file.exists()) {
             Toast.makeText(this, "目录不存在", Toast.LENGTH_SHORT).show();
         }
+        File historyFile = ((CApplication) getApplication()).markFile;
         commList.clear();
         File[] tempList = file.listFiles();
         if (tempList != null) {
@@ -99,8 +100,11 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                     if (temp.getName().startsWith(".")) continue;
                     FileModel model = new FileModel();
                     model.setFile(temp);
-                    model.setStatus(canShow(temp));
+                    model.setStatus(getFileStatus(temp));
                     list.add(model);
+                    if (file.compareTo(historyFile) == 0) {
+                        model.setHistory(true);
+                    }
                     if (model.getStatus() == FileModel.STATUS_SHOW) {
                         commList.add(model);
                     }
@@ -123,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
      * @param file
      * @return
      */
-    private byte canShow(File file) {
+    private byte getFileStatus(File file) {
         File[] files = file.listFiles();
         if (files.length == 0) return FileModel.STATUS_EMPTY;
         for (File temp : files) {

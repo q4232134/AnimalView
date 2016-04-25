@@ -44,8 +44,8 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
     private SeekBar mSeekBar;
     private TextView mPageNum;
     public static final String INDEX = "index";
-    private File currentDir;
-    private int currentIndex;
+    public static final String PAGE_NUM = "page-num";
+    private FileModel currentModel;
     private HackyViewPager mViewPager;
     private List<File> list = new ArrayList<>();
     private ImagePagerAdapter adapter;
@@ -53,6 +53,8 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
     public static final byte TOUCH_FRONT = 1;
     public static final byte TOUCH_AFTER = 2;
     private boolean uiShowed = false;
+    private List<FileModel> commList;
+
     private static int HIDE_UI = View.SYSTEM_UI_FLAG_LOW_PROFILE
             | View.SYSTEM_UI_FLAG_FULLSCREEN
             | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -75,8 +77,9 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         mLayout = (FrameLayout) findViewById(R.id.layout);
         mSeekBar = (SeekBar) findViewById(R.id.seek_bar);
         mToolBar = findViewById(R.id.toolsbar);
-        currentIndex = getIntent().getIntExtra(INDEX, 0);
-        currentDir = ((CApplication) getApplication()).list.get(currentIndex).getFile();
+
+        commList = ((CApplication) getApplication()).list;
+        currentModel = commList.get(getIntent().getIntExtra(INDEX, 0));
         mViewPager = (HackyViewPager) findViewById(R.id.view_pager);
         mPageNum = (TextView) findViewById(R.id.page_num);
         adapter = new ImagePagerAdapter(list);
@@ -108,7 +111,7 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
                     mViewPager.setCurrentItem(progress, false);
             }
         });
-        fresh();
+        fresh(getIntent().getIntExtra(PAGE_NUM, 0));
     }
 
 
@@ -130,7 +133,7 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Tools.deleteDir(currentDir);
+                Tools.deleteDir(currentModel.getFile());
                 if (runnable != null) runnable.run();
             }
         });
@@ -140,11 +143,11 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
 
 
     /**
-     * 刷新
+     * 刷新,刷新之后显示的当前页
      */
-    private void fresh() {
+    private void fresh(int pageNum) {
         list.clear();
-        File[] tempList = currentDir.listFiles(new FilenameFilter() {
+        File[] tempList = currentModel.getFile().listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
                 String tempName = filename.toLowerCase();
@@ -159,12 +162,12 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
             for (File temp : tempList) {
                 list.add(temp);
             }
-        setTitle(currentDir.getName());
+        setTitle(currentModel.getFile().getName());
         mSeekBar.setMax(list.size() - 1);
         mSeekBar.setProgress(0);
         freshPageNum();
         adapter.notifyDataSetChanged();
-        mViewPager.setCurrentItem(0, false);
+        mViewPager.setCurrentItem(pageNum, false);
     }
 
     private void freshPageNum() {
@@ -237,7 +240,7 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
      */
     private void toNextPage() {
         if (mViewPager.getCurrentItem() >= adapter.getCount() - 1) {
-            setAnimal(currentIndex + 1);
+            setAnimal(commList.indexOf(currentModel) + 1);
         } else {
             mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1, false);
         }
@@ -248,7 +251,7 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
      */
     private void toPreviousPage() {
         if (mViewPager.getCurrentItem() <= 0) {
-            setAnimal(currentIndex - 1);
+            setAnimal(commList.indexOf(currentModel) - 1);
         } else {
             mViewPager.setCurrentItem(mViewPager.getCurrentItem() - 1, false);
         }
@@ -260,19 +263,17 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
      * @param index
      */
     private void setAnimal(int index) {
-        List<FileModel> list = ((CApplication) getApplication()).list;
         if (index < 0) {
             Toast.makeText(this, "已经是第一篇了哦", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (index > list.size() - 1) {
+        if (index > commList.size() - 1) {
             Toast.makeText(this, "已经是最后一篇了哦", Toast.LENGTH_SHORT).show();
             return;
         }
-        currentDir = list.get(index).getFile();
-        currentIndex = index;
-        Snackbar.make(mViewPager, currentDir.getName(), Snackbar.LENGTH_SHORT).show();
-        fresh();
+        currentModel = commList.get(index);
+        Snackbar.make(mViewPager, currentModel.getFile().getName(), Snackbar.LENGTH_SHORT).show();
+        fresh(0);
     }
 
     /**
@@ -282,15 +283,21 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
      */
     public void onDeleteClick(View view) {
         delayedRun(Constants.HIDE_UI_DELAY);
-        showDialog(currentDir, new Runnable() {
+        showDialog(currentModel.getFile(), new Runnable() {
             @Override
             public void run() {
-                List<FileModel> list = ((CApplication) getApplication()).list;
-                list.remove(currentIndex);
-                setAnimal(currentIndex);
+                int position = commList.indexOf(currentModel);
+                commList.remove(currentModel);
+                setAnimal(position);
             }
         });
+    }
 
+    @Override
+    protected void onStop() {
+        ((CApplication) getApplication()).markFile = currentModel.getFile();
+        ((CApplication) getApplication()).markPage = mViewPager.getCurrentItem();
+        super.onStop();
     }
 
     /**
@@ -299,7 +306,7 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
      * @param view
      */
     public void onNextClick(View view) {
-        setAnimal(currentIndex + 1);
+        setAnimal(commList.indexOf(currentModel) + 1);
         delayedRun(Constants.HIDE_UI_DELAY);
     }
 

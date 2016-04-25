@@ -201,6 +201,23 @@ public class Tools {
         try {
             FileInputStream fis = new FileInputStream(path);
             bitmap = BitmapFactory.decodeStream(fis);
+        } catch (Exception e) {
+        }
+        return bitmap;
+    }
+
+
+    /**
+     * 读取文件成为bitMap（保持旋转）
+     *
+     * @param path
+     * @return
+     */
+    public static Bitmap getBitmapWithRota(String path) {
+        Bitmap bitmap = null;
+        try {
+            FileInputStream fis = new FileInputStream(path);
+            bitmap = BitmapFactory.decodeStream(fis);
             bitmap = rotaingImageView(readPictureDegree(path), bitmap);
         } catch (Exception e) {
         }

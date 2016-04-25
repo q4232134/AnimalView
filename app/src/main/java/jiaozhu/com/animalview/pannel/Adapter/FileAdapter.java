@@ -3,8 +3,12 @@ package jiaozhu.com.animalview.pannel.Adapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +45,14 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
     public void onBindView(ViewHolder holder, int position, boolean isSelected) {
         FileModel model = list.get(position);
         holder.mTitle.setText(model.getFile().getName());
+        //高亮历史记录
+        if (model.isHistory()) {
+            SpannableStringBuilder style = new SpannableStringBuilder(model.getFile().getName());
+            style.setSpan(new ForegroundColorSpan(Color.RED), 0, style.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            holder.mTitle.setText(style);
+        } else {
+            holder.mTitle.setText(model.getFile().getName());
+        }
         if (isSelected) {
             holder.mSelectView.setVisibility(View.VISIBLE);
             holder.mView.setBackgroundColor(resource.getColor(R.color.main_item_selected_bg));

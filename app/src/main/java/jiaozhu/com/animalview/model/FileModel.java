@@ -8,6 +8,7 @@ import java.io.File;
 public class FileModel {
     private File file;
     private byte status;
+    private boolean isHistory = false;//是否为历史记录
     public static final byte STATUS_EMPTY = 0;//空目录
     public static final byte STATUS_SHOW = 1;//可用阅读器打开
     public static final byte STATUS_OPEN = 2;//存在子目录
@@ -27,5 +28,13 @@ public class FileModel {
 
     public void setStatus(byte status) {
         this.status = status;
+    }
+
+    public boolean isHistory() {
+        return isHistory;
+    }
+
+    public void setHistory(boolean history) {
+        isHistory = history;
     }
 }
