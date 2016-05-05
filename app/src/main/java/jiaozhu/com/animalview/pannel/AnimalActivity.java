@@ -1,11 +1,11 @@
 package jiaozhu.com.animalview.pannel;
 
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +13,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -27,6 +28,8 @@ import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.commonTools.HackyViewPager;
 import jiaozhu.com.animalview.model.FileModel;
+import jiaozhu.com.animalview.pannel.Adapter.BasePagerAdapter;
+import jiaozhu.com.animalview.pannel.Interface.OnViewClickListener;
 import jiaozhu.com.animalview.support.CApplication;
 import jiaozhu.com.animalview.support.Constants;
 import jiaozhu.com.animalview.support.Tools;
@@ -38,22 +41,36 @@ import uk.co.senab.photoview.PhotoViewAttacher;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class AnimalActivity extends AppCompatActivity implements PhotoViewAttacher.OnViewTapListener, ViewPager.OnPageChangeListener {
+public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener,
+        OnViewClickListener {
     private FrameLayout mLayout;
     private View mToolBar;
     private SeekBar mSeekBar;
     private TextView mPageNum;
+    private Button mRotation, mSplit;
     public static final String INDEX = "index";
     public static final String PAGE_NUM = "page-num";
     private FileModel currentModel;
     private HackyViewPager mViewPager;
     private List<File> list = new ArrayList<>();
     private ImagePagerAdapter adapter;
+
+    private byte splitStatus = SPLIT_AUTO;
+    private boolean uiShowed = false;
+    private List<FileModel> commList;
+    private boolean showLastPageByChild = false;//双页图片载入时是否应当默认先显示后一页(从后向前翻页时需要先显示后一页)
+
+    private static final boolean autoHide = false;
+
     public static final byte TOUCH_CENTER = 0;
     public static final byte TOUCH_FRONT = 1;
     public static final byte TOUCH_AFTER = 2;
-    private boolean uiShowed = false;
-    private List<FileModel> commList;
+
+
+    public static final byte SPLIT_AUTO = 3;//自动分页
+    public static final byte SPLIT_NONE = 4;//不分页
+    public static final byte SPLIT_FORCE = 5;//强制分页
+
 
     private static int HIDE_UI = View.SYSTEM_UI_FLAG_LOW_PROFILE
             | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -77,13 +94,14 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         mLayout = (FrameLayout) findViewById(R.id.layout);
         mSeekBar = (SeekBar) findViewById(R.id.seek_bar);
         mToolBar = findViewById(R.id.toolsbar);
-
-        commList = ((CApplication) getApplication()).list;
-        currentModel = commList.get(getIntent().getIntExtra(INDEX, 0));
         mViewPager = (HackyViewPager) findViewById(R.id.view_pager);
         mPageNum = (TextView) findViewById(R.id.page_num);
-        adapter = new ImagePagerAdapter(list);
-        adapter.setOnViewTapListener(this);
+        mRotation = (Button) findViewById(R.id.rotation_btn);
+        mSplit = (Button) findViewById(R.id.split_btn);
+
+        commList = ((CApplication) getApplication()).list;
+        adapter = new ImagePagerAdapter(list, mViewPager);
+        adapter.setOnViewClickListener(this);
         mViewPager.setAdapter(adapter);
         mViewPager.addOnPageChangeListener(this);
         showUI();
@@ -111,7 +129,25 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
                     mViewPager.setCurrentItem(progress, false);
             }
         });
+        currentModel = commList.get(getIntent().getIntExtra(INDEX, 0));
         fresh(getIntent().getIntExtra(PAGE_NUM, 0));
+    }
+
+    public void onOrientationClick(View view) {
+        switch (getRequestedOrientation()) {
+            case ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                mRotation.setText("横屏");
+                break;
+            case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                mRotation.setText("竖屏");
+                break;
+            case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+                mRotation.setText("自动");
+                break;
+        }
     }
 
 
@@ -143,7 +179,9 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
 
 
     /**
-     * 刷新,刷新之后显示的当前页
+     * 刷新
+     *
+     * @param pageNum 刷新之后显示的页码,-1代表最后一页
      */
     private void fresh(int pageNum) {
         list.clear();
@@ -163,10 +201,12 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
                 list.add(temp);
             }
         setTitle(currentModel.getFile().getName());
-        mSeekBar.setMax(list.size() - 1);
+        mSeekBar.setMax(adapter.getCount() - 1);
         mSeekBar.setProgress(0);
         freshPageNum();
         adapter.notifyDataSetChanged();
+        if (pageNum == -1)
+            pageNum = adapter.getCount() - 1;
         mViewPager.setCurrentItem(pageNum, false);
     }
 
@@ -176,16 +216,16 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
 
 
     @Override
-    public void onViewTap(View view, float x, float y) {
+    public void onViewTap(View view, float x, float y, BasePagerAdapter adapter) {
         switch (getTouchType(x, y)) {
             case TOUCH_CENTER:
                 changeUi();
                 break;
             case TOUCH_FRONT:
-                toNextPage();
+                toNextPage(adapter);
                 break;
             case TOUCH_AFTER:
-                toPreviousPage();
+                toPreviousPage(adapter);
                 break;
 
         }
@@ -238,31 +278,30 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
     /**
      * 到下一页
      */
-    private void toNextPage() {
-        if (mViewPager.getCurrentItem() >= adapter.getCount() - 1) {
-            setAnimal(commList.indexOf(currentModel) + 1);
-        } else {
-            mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1, false);
+    private void toNextPage(BasePagerAdapter adapter) {
+        showLastPageByChild = false;
+        if (!adapter.toNextPage()) {
+            setAnimal(commList.indexOf(currentModel) + 1, 0);
         }
     }
 
     /**
      * 到上一页
      */
-    private void toPreviousPage() {
-        if (mViewPager.getCurrentItem() <= 0) {
-            setAnimal(commList.indexOf(currentModel) - 1);
-        } else {
-            mViewPager.setCurrentItem(mViewPager.getCurrentItem() - 1, false);
+    private void toPreviousPage(BasePagerAdapter adapter) {
+        showLastPageByChild = true;
+        if (!adapter.toPreviousPage()) {
+            setAnimal(commList.indexOf(currentModel) - 1, -1);
         }
     }
 
     /**
      * 设置当前显示的目录
      *
-     * @param index
+     * @param index   需要显示的目录
+     * @param pageNum 刷新之后显示的页码,-1代表最后一页
      */
-    private void setAnimal(int index) {
+    private void setAnimal(int index, int pageNum) {
         if (index < 0) {
             Toast.makeText(this, "已经是第一篇了哦", Toast.LENGTH_SHORT).show();
             return;
@@ -273,7 +312,7 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         }
         currentModel = commList.get(index);
         Snackbar.make(mViewPager, currentModel.getFile().getName(), Snackbar.LENGTH_SHORT).show();
-        fresh(0);
+        fresh(pageNum);
     }
 
     /**
@@ -282,15 +321,39 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
      * @param view
      */
     public void onDeleteClick(View view) {
+        showLastPageByChild = false;
         delayedRun(Constants.HIDE_UI_DELAY);
         showDialog(currentModel.getFile(), new Runnable() {
             @Override
             public void run() {
                 int position = commList.indexOf(currentModel);
                 commList.remove(currentModel);
-                setAnimal(position);
+                setAnimal(position, 0);
             }
         });
+    }
+
+    /**
+     * 点击分页按钮
+     *
+     * @param view
+     */
+    public void onSplitClick(View view) {
+        switch (splitStatus) {
+            case SPLIT_AUTO:
+                splitStatus = SPLIT_FORCE;
+                mSplit.setText("强制分页");
+                break;
+            case SPLIT_FORCE:
+                splitStatus = SPLIT_NONE;
+                mSplit.setText("不分页");
+                break;
+            case SPLIT_NONE:
+                splitStatus = SPLIT_AUTO;
+                mSplit.setText("自动分页");
+                break;
+        }
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -301,12 +364,13 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
 
 
     /**
-     * 点击
+     * 点击下一篇
      *
      * @param view
      */
     public void onNextClick(View view) {
-        setAnimal(commList.indexOf(currentModel) + 1);
+        showLastPageByChild = false;
+        setAnimal(commList.indexOf(currentModel) + 1, 0);
         delayedRun(Constants.HIDE_UI_DELAY);
     }
 
@@ -332,8 +396,10 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
 
 
     private void delayedRun(long time) {
-        handler.removeCallbacks(autoHideToolbar);
-        handler.postDelayed(autoHideToolbar, time);
+        if (autoHide) {
+            handler.removeCallbacks(autoHideToolbar);
+            handler.postDelayed(autoHideToolbar, time);
+        }
     }
 
     @Override
@@ -341,8 +407,16 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
 
     }
 
+    int lastPosition = 0;
+
     @Override
     public void onPageSelected(int position) {
+        if (position > lastPosition) {
+            showLastPageByChild = false;
+        } else {
+            showLastPageByChild = true;
+        }
+        lastPosition = position;
         mSeekBar.setProgress(position);
         freshPageNum();
     }
@@ -363,21 +437,25 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         return super.onOptionsItemSelected(item);
     }
 
-    static class ImagePagerAdapter extends PagerAdapter {
-        List<File> list;
-        PhotoViewAttacher.OnViewTapListener onViewTapListener;
+    /**
+     * 子适配器
+     */
+    class ContentPagerAdapter extends BasePagerAdapter implements PhotoViewAttacher.OnViewTapListener {
+        List<Bitmap> list;
+        OnViewClickListener onViewClickListener;
 
-        public PhotoViewAttacher.OnViewTapListener getOnViewTapListener() {
-            return onViewTapListener;
-        }
-
-        public void setOnViewTapListener(PhotoViewAttacher.OnViewTapListener onViewTapListener) {
-            this.onViewTapListener = onViewTapListener;
-        }
-
-
-        public ImagePagerAdapter(List<File> list) {
+        public ContentPagerAdapter(List<Bitmap> list, ViewPager viewPager, BasePagerAdapter parentAdapter) {
             this.list = list;
+            setViewPager(viewPager);
+            setParentAdapter(parentAdapter);
+        }
+
+        public OnViewClickListener getOnViewClickListener() {
+            return onViewClickListener;
+        }
+
+        public void setOnViewClickListener(OnViewClickListener onViewClickListener) {
+            this.onViewClickListener = onViewClickListener;
         }
 
         @Override
@@ -386,58 +464,92 @@ public class AnimalActivity extends AppCompatActivity implements PhotoViewAttach
         }
 
         @Override
-        public View instantiateItem(ViewGroup container, final int position) {
-            final PhotoView photoView = new PhotoView(container.getContext());
-            photoView.setOnViewTapListener(onViewTapListener);
-
-            BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
-                Bitmap bm;
-
-                @Override
-                public void runnable() {
-                    bm = Tools.getBitmap(list.get(position).getPath());
-                }
-
-                @Override
-                public void onBackgroundFinished() {
-                    photoView.setImageBitmap(bm);
-                }
-            });
-
-            // Now just add PhotoView to ViewPager and return it
+        public View instantiateItem(ViewGroup container, int position) {
+            PhotoView photoView = new PhotoView(container.getContext());
+            photoView.setImageBitmap(list.get(position));
+            photoView.setOnViewTapListener(this);
             container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
             return photoView;
         }
 
         @Override
-        public void destroyItem(ViewGroup container, int position, Object object) {
-            container.removeView((View) object);
+        public void onViewTap(View view, float x, float y) {
+            if (onViewClickListener != null)
+                onViewClickListener.onViewTap(view, x, y, this);
+        }
+    }
+
+
+    /**
+     * 主要适配器
+     */
+    class ImagePagerAdapter extends BasePagerAdapter {
+        List<File> list;
+        OnViewClickListener onViewClickListener;
+
+        public ImagePagerAdapter(List<File> list, ViewPager viewPager) {
+            this.list = list;
+            setViewPager(viewPager);
+        }
+
+        public OnViewClickListener getOnViewClickListener() {
+            return onViewClickListener;
+        }
+
+        public void setOnViewClickListener(OnViewClickListener onViewClickListener) {
+            this.onViewClickListener = onViewClickListener;
         }
 
         @Override
-        public boolean isViewFromObject(View view, Object object) {
-            return view == object;
+        public int getCount() {
+            return list.size();
         }
 
-        //用于在notify时强行重绘画面
-        private int mChildCount = 0;
 
         @Override
-        public void notifyDataSetChanged() {
-            mChildCount = getCount();
-            super.notifyDataSetChanged();
-        }
+        public View instantiateItem(ViewGroup container, final int position) {
+            final List<Bitmap> bms = new ArrayList<>();
+            ViewPager viewPager = new HackyViewPager(container.getContext());
+            final ContentPagerAdapter contentPagerAdapter = new ContentPagerAdapter(bms, viewPager, this);
+            contentPagerAdapter.setOnViewClickListener(onViewClickListener);
+            viewPager.setAdapter(contentPagerAdapter);
 
-        @Override
-        public int getItemPosition(Object object) {
-            if (mChildCount > 0) {
-                mChildCount--;
-                return POSITION_NONE;
-            }
-            return super.getItemPosition(object);
-        }
+            BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
+                @Override
+                public void runnable() {
+                    Bitmap bm;
+                    bm = Tools.getBitmap(list.get(position).getPath());
+                    switch (splitStatus) {
+                        case SPLIT_AUTO:
+                            if (bm.getHeight() < bm.getWidth() * 3 / 4) {
+                                bms.add(Tools.splitBitmap(bm, 0));
+                                bms.add(Tools.splitBitmap(bm, 1));
+                            } else {
+                                bms.add(bm);
+                            }
+                            break;
+                        case SPLIT_NONE:
+                            bms.add(bm);
+                            break;
+                        case SPLIT_FORCE:
+                            bms.add(Tools.splitBitmap(bm, 0));
+                            bms.add(Tools.splitBitmap(bm, 1));
+                            break;
+                        default:
+                            bms.add(bm);
+                    }
+                }
 
+                @Override
+                public void onBackgroundFinished() {
+                    contentPagerAdapter.notifyDataSetChanged();
+                    if (showLastPageByChild)
+                        contentPagerAdapter.getViewPager().setCurrentItem(contentPagerAdapter.getCount() - 1, false);
+                }
+            });
+            container.addView(viewPager, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            return viewPager;
+        }
     }
 
 }

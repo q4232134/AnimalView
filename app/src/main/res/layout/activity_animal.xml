@@ -23,7 +23,7 @@
         android:id="@+id/toolsbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="invisible">
+        android:visibility="visible">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
@@ -55,29 +55,44 @@
                 android:progressBackgroundTintMode="add"
                 android:progressTint="@color/colorAccent" />
 
-            <android.support.design.widget.FloatingActionButton
-                android:layout_width="45dp"
-                android:layout_height="45dp"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_above="@+id/seek_bar"
-                android:layout_alignParentRight="true"
-                android:layout_margin="10dp"
-                android:layout_marginBottom="10dp"
-                android:onClick="onDeleteClick"
-                android:src="@drawable/ic_menu_delete"
-                android:text="删除"
-                app:buttonTint="@color/black_overlay" />
+                android:background="@color/black_overlay">
 
-            <android.support.design.widget.FloatingActionButton
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_above="@+id/seek_bar"
-                android:layout_alignParentLeft="true"
-                android:layout_margin="10dp"
-                android:layout_marginBottom="10dp"
-                android:onClick="onNextClick"
-                android:src="@android:drawable/stat_sys_upload_done"
-                android:text="下一篇"
-                app:buttonTint="@color/black_overlay" />
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onNextClick"
+                    android:text="下一篇" />
+
+                <Button
+                    android:id="@+id/rotation_btn"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onOrientationClick"
+                    android:text="自动" />
+
+                <Button
+                    android:id="@+id/split_btn"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onSplitClick"
+                    android:text="自动分页" />
+
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onDeleteClick"
+                    android:text="删除" />
+
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/page_num"

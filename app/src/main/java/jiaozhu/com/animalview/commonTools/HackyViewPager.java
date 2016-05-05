@@ -1,6 +1,7 @@
 package jiaozhu.com.animalview.commonTools;
 
 import android.content.Context;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -8,7 +9,7 @@ import android.view.MotionEvent;
 /**
  * Found at http://stackoverflow.com/questions/7814017/is-it-possible-to-disable-scrolling-on-a-viewpager.
  * Convenient way to temporarily disable ViewPager navigation while interacting with ImageView.
- * 
+ * <p>
  * Julia Zudikova
  */
 
@@ -27,8 +28,8 @@ import android.view.MotionEvent;
  */
 public class HackyViewPager extends ViewPager {
 
-	private boolean isLocked;
-	
+    private boolean isLocked;
+
     public HackyViewPager(Context context) {
         super(context);
         isLocked = false;
@@ -41,32 +42,38 @@ public class HackyViewPager extends ViewPager {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-    	if (!isLocked) {
-	        try {
-	            return super.onInterceptTouchEvent(ev);
-	        } catch (IllegalArgumentException e) {
-	            e.printStackTrace();
-	            return false;
-	        }
-    	}
-    	return false;
+        if (!isLocked) {
+            try {
+                return super.onInterceptTouchEvent(ev);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return false;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return !isLocked && super.onTouchEvent(event);
     }
-    
-	public void toggleLock() {
-		isLocked = !isLocked;
-	}
 
-	public void setLocked(boolean isLocked) {
-		this.isLocked = isLocked;
-	}
+    public void toggleLock() {
+        isLocked = !isLocked;
+    }
 
-	public boolean isLocked() {
-		return isLocked;
-	}
-	
+    public void setLocked(boolean isLocked) {
+        this.isLocked = isLocked;
+    }
+
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    @Override
+    public PagerAdapter getAdapter() {
+        return super.getAdapter();
+    }
 }
+
+

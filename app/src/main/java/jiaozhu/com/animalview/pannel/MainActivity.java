@@ -42,13 +42,12 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 upDir();
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
             }
         });
         commList = ((CApplication) getApplication()).list;
@@ -81,6 +80,9 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         switch (id) {
+            case android.R.id.home:
+                upDir();
+                break;
             default:
         }
         return super.onOptionsItemSelected(item);

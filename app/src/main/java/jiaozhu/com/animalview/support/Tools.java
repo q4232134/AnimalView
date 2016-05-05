@@ -206,6 +206,43 @@ public class Tools {
         return bitmap;
     }
 
+    /**
+     * 读取文件成为bitMap
+     *
+     * @param path
+     * @return
+     */
+    public static Bitmap getBitmap(String path, BitmapFactory.Options options) {
+        Bitmap bitmap = null;
+        try {
+            FileInputStream fis = new FileInputStream(path);
+            bitmap = BitmapFactory.decodeStream(fis, null, options);
+        } catch (Exception e) {
+        }
+        return bitmap;
+    }
+
+
+    private static BitmapFactory.Options options = new BitmapFactory.Options();
+
+    {
+        options.inJustDecodeBounds = true;
+    }
+
+    /**
+     * 是否为双页合并状态
+     *
+     * @param path
+     * @return
+     */
+    public static boolean isDoublePage(String path) {
+        Bitmap bm = getBitmap(path, options);
+        if (bm.getHeight() < bm.getWidth() * 3 / 4) {
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * 读取文件成为bitMap（保持旋转）
@@ -541,5 +578,33 @@ public class Tools {
         }
         return file.delete();
     }
+
+    /**
+     * 图片切割方法
+     *
+     * @param bitmap 图片
+     * @return
+     */
+    /**
+     * 图片切割方法
+     *
+     * @param bitmap  图片
+     * @param pageNum 0:第一页,1:第二页
+     * @return
+     */
+    public static Bitmap splitBitmap(Bitmap bitmap, int pageNum) {
+        int pieceWidth = bitmap.getWidth() / 2;
+        int pieceHeight = bitmap.getHeight();
+        if (pageNum == 0) {
+            return Bitmap.createBitmap(bitmap, 0, 0,
+                    pieceWidth, pieceHeight);
+        }
+        if (pageNum == 1) {
+            return Bitmap.createBitmap(bitmap, pieceWidth, 0,
+                    pieceWidth, pieceHeight);
+        }
+        return null;
+    }
+
 
 }
