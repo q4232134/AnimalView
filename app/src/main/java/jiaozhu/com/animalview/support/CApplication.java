@@ -4,18 +4,11 @@ import android.app.Application;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import jiaozhu.com.animalview.model.FileModel;
 
 /**
  * Created by apple on 15/10/30.
  */
 public class CApplication extends Application {
-    public List<FileModel> list = new ArrayList<>();
-    public File markFile;//最后阅读的文件
-    public int markPage;//最后阅读的页数
 
     @Override
     public void onCreate() {
@@ -23,8 +16,6 @@ public class CApplication extends Application {
         super.onCreate();
 
         Preferences.init(this);
-        markFile = Preferences.getInstance().getHistoryFile();
-        markPage = Preferences.getInstance().getHistoryPage();
 
         initPath(Constants.ROOT_DIR, Constants.CACHE_DIR);
         if (!Constants.NO_MEDIA.exists()) {
@@ -44,10 +35,5 @@ public class CApplication extends Application {
         }
     }
 
-    public void saveAnimal(File file, int pageNum) {
-        Preferences.getInstance().setHistory(file, pageNum);
-        this.markFile = file;
-        this.markPage = pageNum;
-    }
 
 }

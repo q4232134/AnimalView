@@ -30,8 +30,8 @@ import jiaozhu.com.animalview.commonTools.HackyViewPager;
 import jiaozhu.com.animalview.model.FileModel;
 import jiaozhu.com.animalview.pannel.Adapter.BasePagerAdapter;
 import jiaozhu.com.animalview.pannel.Interface.OnViewClickListener;
-import jiaozhu.com.animalview.support.CApplication;
 import jiaozhu.com.animalview.support.Constants;
+import jiaozhu.com.animalview.support.Preferences;
 import jiaozhu.com.animalview.support.Tools;
 import uk.co.senab.photoview.PhotoView;
 import uk.co.senab.photoview.PhotoViewAttacher;
@@ -41,6 +41,7 @@ import uk.co.senab.photoview.PhotoViewAttacher;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
+@SuppressWarnings("WrongConstant")
 public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener,
         OnViewClickListener {
     private FrameLayout mLayout;
@@ -55,7 +56,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     private List<File> list = new ArrayList<>();
     private ImagePagerAdapter adapter;
 
-    private byte splitStatus = SPLIT_AUTO;
+    private byte splitStatus = Preferences.SPLIT_AUTO;
     private boolean uiShowed = false;
     private List<FileModel> commList;
     private boolean showLastPageByChild = false;//双页图片载入时是否应当默认先显示后一页(从后向前翻页时需要先显示后一页)
@@ -65,11 +66,6 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     public static final byte TOUCH_CENTER = 0;
     public static final byte TOUCH_FRONT = 1;
     public static final byte TOUCH_AFTER = 2;
-
-
-    public static final byte SPLIT_AUTO = 3;//自动分页
-    public static final byte SPLIT_NONE = 4;//不分页
-    public static final byte SPLIT_FORCE = 5;//强制分页
 
 
     private static int HIDE_UI = View.SYSTEM_UI_FLAG_LOW_PROFILE
@@ -99,11 +95,24 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
         mRotation = (Button) findViewById(R.id.rotation_btn);
         mSplit = (Button) findViewById(R.id.split_btn);
 
-        commList = ((CApplication) getApplication()).list;
+        initData();
+    }
+
+    private void initData() {
+        commList = Preferences.list;
         adapter = new ImagePagerAdapter(list, mViewPager);
         adapter.setOnViewClickListener(this);
         mViewPager.setAdapter(adapter);
         mViewPager.addOnPageChangeListener(this);
+
+        /**
+         * 初始化设置
+         */
+        setRequestedOrientation(Preferences.getInstance().getsRotation());
+        splitStatus = Preferences.getInstance().getsSplit();
+        mRotation.setText(getRotationName());
+        mSplit.setText(getSplitName());
+
         showUI();
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -133,20 +142,42 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
         fresh(getIntent().getIntExtra(PAGE_NUM, 0));
     }
 
+    /**
+     * 单击旋转按钮
+     *
+     * @param view
+     */
     public void onOrientationClick(View view) {
         switch (getRequestedOrientation()) {
             case ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED:
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                mRotation.setText("横屏");
                 break;
             case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                mRotation.setText("竖屏");
                 break;
             case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-                mRotation.setText("自动");
                 break;
+        }
+        mRotation.setText(getRotationName());
+        Preferences.getInstance().setsRotation(getRequestedOrientation());
+    }
+
+    /**
+     * 获取旋转状态名称
+     *
+     * @return
+     */
+    private String getRotationName() {
+        switch (getRequestedOrientation()) {
+            case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
+                return "横屏";
+            case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
+                return "竖屏";
+            case ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED:
+                return "自动";
+            default:
+                return "";
         }
     }
 
@@ -340,25 +371,39 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
      */
     public void onSplitClick(View view) {
         switch (splitStatus) {
-            case SPLIT_AUTO:
-                splitStatus = SPLIT_FORCE;
+            case Preferences.SPLIT_AUTO:
+                splitStatus = Preferences.SPLIT_FORCE;
                 mSplit.setText("强制分页");
                 break;
-            case SPLIT_FORCE:
-                splitStatus = SPLIT_NONE;
+            case Preferences.SPLIT_FORCE:
+                splitStatus = Preferences.SPLIT_NONE;
                 mSplit.setText("不分页");
                 break;
-            case SPLIT_NONE:
-                splitStatus = SPLIT_AUTO;
+            case Preferences.SPLIT_NONE:
+                splitStatus = Preferences.SPLIT_AUTO;
                 mSplit.setText("自动分页");
                 break;
         }
         adapter.notifyDataSetChanged();
+        Preferences.getInstance().setsSplit(splitStatus);
+    }
+
+    private String getSplitName() {
+        switch (splitStatus) {
+            case Preferences.SPLIT_AUTO:
+                return "自动分页";
+            case Preferences.SPLIT_FORCE:
+                return "强制分页";
+            case Preferences.SPLIT_NONE:
+                return "不分页";
+            default:
+                return "";
+        }
     }
 
     @Override
     protected void onPause() {
-        ((CApplication) getApplication()).saveAnimal(currentModel.getFile(), mViewPager.getCurrentItem());
+        Preferences.getInstance().saveHistory(currentModel.getFile(), mViewPager.getCurrentItem());
         super.onPause();
     }
 
@@ -547,7 +592,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
                     Bitmap bm;
                     bm = Tools.getBitmap(list.get(position).getPath());
                     switch (splitStatus) {
-                        case SPLIT_AUTO:
+                        case Preferences.SPLIT_AUTO:
                             if (bm.getHeight() < bm.getWidth() * 3 / 4) {
                                 tempList.add(Tools.splitBitmap(bm, 0));
                                 tempList.add(Tools.splitBitmap(bm, 1));
@@ -555,10 +600,10 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
                                 tempList.add(bm);
                             }
                             break;
-                        case SPLIT_NONE:
+                        case Preferences.SPLIT_NONE:
                             tempList.add(bm);
                             break;
-                        case SPLIT_FORCE:
+                        case Preferences.SPLIT_FORCE:
                             tempList.add(Tools.splitBitmap(bm, 0));
                             tempList.add(Tools.splitBitmap(bm, 1));
                             break;

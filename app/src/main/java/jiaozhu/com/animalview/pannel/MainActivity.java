@@ -25,8 +25,8 @@ import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.SelectorRecyclerAdapter;
 import jiaozhu.com.animalview.model.FileModel;
 import jiaozhu.com.animalview.pannel.Adapter.FileAdapter;
-import jiaozhu.com.animalview.support.CApplication;
 import jiaozhu.com.animalview.support.Constants;
+import jiaozhu.com.animalview.support.Preferences;
 
 public class MainActivity extends AppCompatActivity implements SelectorRecyclerAdapter.OnItemClickListener {
     private RecyclerView recyclerView;
@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        recyclerView = (RecyclerView) findViewById(R.id.list);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,9 +51,14 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 upDir();
             }
         });
-        commList = ((CApplication) getApplication()).list;
+
+        initData();
+
+    }
+
+    private void initData() {
+        commList = Preferences.list;
         stack.push(rootFile);
-        recyclerView = (RecyclerView) findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         //androidL以下需要在这里设置
         recyclerView.setNestedScrollingEnabled(false);
@@ -60,7 +66,6 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         adapter.setOnItemClickListener(this);
 //        adapter.setSelectorMode(adapter.MODE_MULTI);
         recyclerView.setAdapter(adapter);
-
     }
 
     @Override
@@ -94,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         if (!file.exists()) {
             Toast.makeText(this, "目录不存在", Toast.LENGTH_SHORT).show();
         }
-        File historyFile = ((CApplication) getApplication()).markFile;
+        File historyFile = Preferences.getInstance().getHistoryFile();
         commList.clear();
         File[] tempList = file.listFiles();
         if (tempList != null) {
@@ -169,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 i.putExtra(AnimalActivity.INDEX, commList.indexOf(model));
                 //如果有历史记录则进行载入
                 if (model.isHistory()) {
-                    i.putExtra(AnimalActivity.PAGE_NUM, ((CApplication) getApplication()).markPage);
+                    i.putExtra(AnimalActivity.PAGE_NUM, Preferences.getInstance().getHistoryPage());
                 }
                 startActivity(i);
                 break;
