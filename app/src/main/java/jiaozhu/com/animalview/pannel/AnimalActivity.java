@@ -509,12 +509,39 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
         @Override
         public View instantiateItem(ViewGroup container, final int position) {
             final List<Bitmap> bms = new ArrayList<>();
-            ViewPager viewPager = new HackyViewPager(container.getContext());
+            final HackyViewPager viewPager = new HackyViewPager(container.getContext());
+
+
+//            Bitmap bm;
+//            bm = Tools.getBitmap(list.get(position).getPath());
+//            switch (splitStatus) {
+//                case SPLIT_AUTO:
+//                    if (bm.getHeight() < bm.getWidth() * 3 / 4) {
+//                        bms.add(Tools.splitBitmap(bm, 0));
+//                        bms.add(Tools.splitBitmap(bm, 1));
+//                    } else {
+//                        bms.add(bm);
+//                    }
+//                    break;
+//                case SPLIT_NONE:
+//                    bms.add(bm);
+//                    break;
+//                case SPLIT_FORCE:
+//                    bms.add(Tools.splitBitmap(bm, 0));
+//                    bms.add(Tools.splitBitmap(bm, 1));
+//                    break;
+//                default:
+//                    bms.add(bm);
+//            }
+
             final ContentPagerAdapter contentPagerAdapter = new ContentPagerAdapter(bms, viewPager, this);
             contentPagerAdapter.setOnViewClickListener(onViewClickListener);
             viewPager.setAdapter(contentPagerAdapter);
 
             BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
+                //不能再非主线程更新bms
+                List<Bitmap> tempList = new ArrayList<>();
+
                 @Override
                 public void runnable() {
                     Bitmap bm;
@@ -522,26 +549,27 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
                     switch (splitStatus) {
                         case SPLIT_AUTO:
                             if (bm.getHeight() < bm.getWidth() * 3 / 4) {
-                                bms.add(Tools.splitBitmap(bm, 0));
-                                bms.add(Tools.splitBitmap(bm, 1));
+                                tempList.add(Tools.splitBitmap(bm, 0));
+                                tempList.add(Tools.splitBitmap(bm, 1));
                             } else {
-                                bms.add(bm);
+                                tempList.add(bm);
                             }
                             break;
                         case SPLIT_NONE:
-                            bms.add(bm);
+                            tempList.add(bm);
                             break;
                         case SPLIT_FORCE:
-                            bms.add(Tools.splitBitmap(bm, 0));
-                            bms.add(Tools.splitBitmap(bm, 1));
+                            tempList.add(Tools.splitBitmap(bm, 0));
+                            tempList.add(Tools.splitBitmap(bm, 1));
                             break;
                         default:
-                            bms.add(bm);
+                            tempList.add(bm);
                     }
                 }
 
                 @Override
                 public void onBackgroundFinished() {
+                    bms.addAll(tempList);
                     contentPagerAdapter.notifyDataSetChanged();
                     if (showLastPageByChild)
                         contentPagerAdapter.getViewPager().setCurrentItem(contentPagerAdapter.getCount() - 1, false);
