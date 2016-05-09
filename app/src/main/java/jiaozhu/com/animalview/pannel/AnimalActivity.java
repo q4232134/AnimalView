@@ -226,10 +226,9 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
             @Override
             public boolean accept(File dir, String filename) {
                 String tempName = filename.toLowerCase();
-                if (tempName.endsWith(".jpg")) return true;
-                if (tempName.endsWith(".png")) return true;
-                if (tempName.endsWith(".bmp")) return true;
-                if (tempName.endsWith(".gif")) return true;
+                for (String type : Constants.IMAGE_TYPE) {
+                    if (tempName.endsWith(type)) return true;
+                }
                 return false;
             }
         });

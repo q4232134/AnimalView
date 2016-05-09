@@ -5,10 +5,14 @@ import android.app.Application;
 import java.io.File;
 import java.io.IOException;
 
+import jiaozhu.com.animalview.dao.DBHelper;
+import jiaozhu.com.animalview.dao.FileDao;
+
 /**
  * Created by apple on 15/10/30.
  */
 public class CApplication extends Application {
+    DBHelper dbHelper = new DBHelper(this);
 
     @Override
     public void onCreate() {
@@ -16,6 +20,7 @@ public class CApplication extends Application {
         super.onCreate();
 
         Preferences.init(this);
+        FileDao.init(dbHelper);
 
         initPath(Constants.ROOT_DIR, Constants.CACHE_DIR);
         if (!Constants.NO_MEDIA.exists()) {

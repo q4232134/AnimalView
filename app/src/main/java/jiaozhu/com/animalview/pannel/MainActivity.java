@@ -107,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 if (temp.getName().startsWith(".")) continue;
                 FileModel model = new FileModel();
                 model.setFile(temp);
-                model.setStatus(getFileStatus(temp));
                 if (model.getStatus() == FileModel.STATUS_ZIP) {
                     continue;
                 }
@@ -131,31 +130,6 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             }
         });
         adapter.notifyDataSetChanged();
-    }
-
-    /**
-     * 目录状态
-     *
-     * @param file
-     * @return
-     */
-    private byte getFileStatus(File file) {
-        if (file.isFile()) {
-            String fileName = file.getName().toLowerCase();
-            if (fileName.endsWith(".zip") || fileName.endsWith(".rar")) {
-                return FileModel.STATUS_ZIP;
-            }
-            return FileModel.STATUS_OTHER;
-        } else {
-            File[] files = file.listFiles();
-            if (files.length == 0) return FileModel.STATUS_EMPTY;
-            for (File temp : files) {
-                if (temp.isDirectory()) {
-                    return FileModel.STATUS_OPEN;
-                }
-            }
-            return FileModel.STATUS_SHOW;
-        }
     }
 
     @Override

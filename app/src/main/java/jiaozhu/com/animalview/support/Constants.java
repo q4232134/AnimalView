@@ -55,4 +55,8 @@ public class Constants {
      */
     public static final int CACHE_WIDTH = 512;
 
+    /**
+     * 可识别的图片类型
+     */
+    public static final String[] IMAGE_TYPE = {".jpg", ".png", ".bmp", ".gif"};
 }
