@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,6 +35,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 import jiaozhu.com.animalview.commonTools.Log;
 
@@ -604,6 +610,30 @@ public class Tools {
                     pieceWidth, pieceHeight);
         }
         return null;
+    }
+
+    /**
+     * 读取zip目录
+     *
+     * @param file
+     * @return
+     */
+    public static List<ZipEntry> readZip(File file) {
+        List<ZipEntry> list = new ArrayList<>();
+        try {
+            ZipFile zip = new ZipFile(file);
+            ZipEntry element = zip.entries().nextElement();
+            FileInputStream fis = new FileInputStream(file);
+            ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                list.add(entry);
+            }
+            zis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
 

@@ -48,7 +48,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     private View mToolBar;
     private SeekBar mSeekBar;
     private TextView mPageNum;
-    private Button mRotation, mSplit;
+    private Button mRotation, mSplit, mDirection;
     public static final String INDEX = "index";
     public static final String PAGE_NUM = "page-num";
     private FileModel currentModel;
@@ -57,6 +57,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     private ImagePagerAdapter adapter;
 
     private byte splitStatus = Preferences.SPLIT_AUTO;
+    private byte directionStatus = Preferences.DIRECTION_LR;
     private boolean uiShowed = false;
     private List<FileModel> commList;
     private boolean showLastPageByChild = false;//双页图片载入时是否应当默认先显示后一页(从后向前翻页时需要先显示后一页)
@@ -77,6 +78,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     private static int SHOW_UI = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
     private Handler handler = new Handler();
+    private byte directName;
 
 
     @Override
@@ -94,6 +96,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
         mPageNum = (TextView) findViewById(R.id.page_num);
         mRotation = (Button) findViewById(R.id.rotation_btn);
         mSplit = (Button) findViewById(R.id.split_btn);
+        mDirection = (Button) findViewById(R.id.direction_btn);
 
         initData();
     }
@@ -110,8 +113,11 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
          */
         setRequestedOrientation(Preferences.getInstance().getsRotation());
         splitStatus = Preferences.getInstance().getsSplit();
+        directionStatus = Preferences.getInstance().getsDirection();
         mRotation.setText(getRotationName());
         mSplit.setText(getSplitName());
+        mDirection.setText(getDirectName());
+
 
         showUI();
 
@@ -248,6 +254,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
 
     @Override
     public void onViewTap(View view, float x, float y, BasePagerAdapter adapter) {
+//        System.out.println(x + ":" + y);
         switch (getTouchType(x, y)) {
             case TOUCH_CENTER:
                 changeUi();
@@ -373,22 +380,46 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
         switch (splitStatus) {
             case Preferences.SPLIT_AUTO:
                 splitStatus = Preferences.SPLIT_FORCE;
-                mSplit.setText("强制分页");
                 break;
             case Preferences.SPLIT_FORCE:
                 splitStatus = Preferences.SPLIT_NONE;
-                mSplit.setText("不分页");
                 break;
             case Preferences.SPLIT_NONE:
                 splitStatus = Preferences.SPLIT_AUTO;
-                mSplit.setText("自动分页");
                 break;
         }
         adapter.notifyDataSetChanged();
+        mSplit.setText(getSplitName());
         Preferences.getInstance().setsSplit(splitStatus);
     }
 
+    /**
+     * 点击方向按钮
+     *
+     * @param view
+     */
+    public void onDirectionClick(View view) {
+        switch (directionStatus) {
+            case Preferences.DIRECTION_LR:
+                directionStatus = Preferences.DIRECTION_RL;
+                break;
+            case Preferences.DIRECTION_RL:
+                directionStatus = Preferences.DIRECTION_LR;
+                break;
+        }
+        adapter.notifyDataSetChanged();
+        mDirection.setText(getDirectName());
+        Preferences.getInstance().setsDirection(directionStatus);
+    }
+
+
+    /**
+     * 获取分页方式名称
+     *
+     * @return
+     */
     private String getSplitName() {
+        System.out.println(splitStatus);
         switch (splitStatus) {
             case Preferences.SPLIT_AUTO:
                 return "自动分页";
@@ -483,6 +514,22 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     }
 
     /**
+     * 获取方向按钮名称
+     *
+     * @return
+     */
+    public String getDirectName() {
+        switch (directionStatus) {
+            case Preferences.DIRECTION_LR:
+                return "左→右";
+            case Preferences.DIRECTION_RL:
+                return "右→左";
+            default:
+                return "";
+        }
+    }
+
+    /**
      * 子适配器
      */
     class ContentPagerAdapter extends BasePagerAdapter implements PhotoViewAttacher.OnViewTapListener {
@@ -510,7 +557,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
 
         @Override
         public View instantiateItem(ViewGroup container, int position) {
-            PhotoView photoView = new PhotoView(container.getContext());
+            final PhotoView photoView = new PhotoView(container.getContext());
             photoView.setImageBitmap(list.get(position));
             photoView.setOnViewTapListener(this);
             container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -555,30 +602,6 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
         public View instantiateItem(ViewGroup container, final int position) {
             final List<Bitmap> bms = new ArrayList<>();
             final HackyViewPager viewPager = new HackyViewPager(container.getContext());
-
-
-//            Bitmap bm;
-//            bm = Tools.getBitmap(list.get(position).getPath());
-//            switch (splitStatus) {
-//                case SPLIT_AUTO:
-//                    if (bm.getHeight() < bm.getWidth() * 3 / 4) {
-//                        bms.add(Tools.splitBitmap(bm, 0));
-//                        bms.add(Tools.splitBitmap(bm, 1));
-//                    } else {
-//                        bms.add(bm);
-//                    }
-//                    break;
-//                case SPLIT_NONE:
-//                    bms.add(bm);
-//                    break;
-//                case SPLIT_FORCE:
-//                    bms.add(Tools.splitBitmap(bm, 0));
-//                    bms.add(Tools.splitBitmap(bm, 1));
-//                    break;
-//                default:
-//                    bms.add(bm);
-//            }
-
             final ContentPagerAdapter contentPagerAdapter = new ContentPagerAdapter(bms, viewPager, this);
             contentPagerAdapter.setOnViewClickListener(onViewClickListener);
             viewPager.setAdapter(contentPagerAdapter);
@@ -594,8 +617,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
                     switch (splitStatus) {
                         case Preferences.SPLIT_AUTO:
                             if (bm.getHeight() < bm.getWidth() * 3 / 4) {
-                                tempList.add(Tools.splitBitmap(bm, 0));
-                                tempList.add(Tools.splitBitmap(bm, 1));
+                                getBitmapList(bm);
                             } else {
                                 tempList.add(bm);
                             }
@@ -604,11 +626,25 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
                             tempList.add(bm);
                             break;
                         case Preferences.SPLIT_FORCE:
-                            tempList.add(Tools.splitBitmap(bm, 0));
-                            tempList.add(Tools.splitBitmap(bm, 1));
+                            getBitmapList(bm);
                             break;
                         default:
                             tempList.add(bm);
+                    }
+                }
+
+                /**
+                 * 根据方向获取bitmap列表
+                 * @param bm
+                 */
+                private void getBitmapList(Bitmap bm) {
+                    if (directionStatus == Preferences.DIRECTION_LR) {
+                        tempList.add(Tools.splitBitmap(bm, 0));
+                        tempList.add(Tools.splitBitmap(bm, 1));
+                    }
+                    if (directionStatus == Preferences.DIRECTION_RL) {
+                        tempList.add(Tools.splitBitmap(bm, 1));
+                        tempList.add(Tools.splitBitmap(bm, 0));
                     }
                 }
 

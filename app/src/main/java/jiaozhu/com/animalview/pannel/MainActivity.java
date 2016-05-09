@@ -104,20 +104,23 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         File[] tempList = file.listFiles();
         if (tempList != null) {
             for (File temp : tempList) {
-                if (temp.isDirectory()) {
-                    if (temp.getName().startsWith(".")) continue;
-                    FileModel model = new FileModel();
-                    model.setFile(temp);
-                    model.setStatus(getFileStatus(temp));
-                    //在历史文件路径中的file全部标示
-                    if (historyFile.getPath().startsWith(temp.getPath())) {
-                        model.setHistory(true);
-                    }
-                    if (model.getStatus() == FileModel.STATUS_SHOW) {
-                        commList.add(model);
-                    }
-                    list.add(model);
+                if (temp.getName().startsWith(".")) continue;
+                FileModel model = new FileModel();
+                model.setFile(temp);
+                model.setStatus(getFileStatus(temp));
+                if (model.getStatus() == FileModel.STATUS_ZIP) {
+                    continue;
                 }
+                //在历史文件路径中的file全部标示
+                if (historyFile.getPath().startsWith(temp.getPath())) {
+                    model.setHistory(true);
+                }
+                if (model.getStatus() == FileModel.STATUS_SHOW || model.getStatus() == FileModel.STATUS_ZIP) {
+                    commList.add(model);
+                }
+                //只显示符合要求的文件或目录
+                if (model.getStatus() != FileModel.STATUS_OTHER)
+                    list.add(model);
             }
         }
         Collections.sort(list, new Comparator<FileModel>() {
@@ -137,14 +140,22 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
      * @return
      */
     private byte getFileStatus(File file) {
-        File[] files = file.listFiles();
-        if (files.length == 0) return FileModel.STATUS_EMPTY;
-        for (File temp : files) {
-            if (temp.isDirectory()) {
-                return FileModel.STATUS_OPEN;
+        if (file.isFile()) {
+            String fileName = file.getName().toLowerCase();
+            if (fileName.endsWith(".zip") || fileName.endsWith(".rar")) {
+                return FileModel.STATUS_ZIP;
             }
+            return FileModel.STATUS_OTHER;
+        } else {
+            File[] files = file.listFiles();
+            if (files.length == 0) return FileModel.STATUS_EMPTY;
+            for (File temp : files) {
+                if (temp.isDirectory()) {
+                    return FileModel.STATUS_OPEN;
+                }
+            }
+            return FileModel.STATUS_SHOW;
         }
-        return FileModel.STATUS_SHOW;
     }
 
     @Override

@@ -24,6 +24,10 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
     public static final byte SPLIT_NONE = 4;//不分页
     public static final byte SPLIT_FORCE = 5;//强制分页
 
+
+    public static final byte DIRECTION_LR = 6;//分页方向从左到右
+    public static final byte DIRECTION_RL = 7;//分页方向从右到左
+
     private static Preferences preferences;
     /**
      * 保存的文件名称
@@ -39,6 +43,7 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
      */
     private static final String SETTING_SPLIT = "setting-split";//分页状态
     private static final String SETTING_ROTATION = "setting-rotation";//旋转状态
+    private static final String SETTING_DIRECTION = "setting-direction";//分页方向
 
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
@@ -49,6 +54,7 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
     private int historyPage;//最后阅读页数
     private int sRotation;//旋转状态
     private byte sSplit;//分页状态
+    private byte sDirection;//分页方向
 
     public static void init(Context context) {
         preferences = new Preferences(context);
@@ -66,7 +72,7 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
         sharedPreferences = context.getSharedPreferences(SHAREDPREFERENCES_NAME,
                 Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
-        initDate(sharedPreferences, HISTORY_FILE, HISTORY_PAGE, SETTING_ROTATION, SETTING_SPLIT);
+        initDate(sharedPreferences, HISTORY_FILE, HISTORY_PAGE, SETTING_ROTATION, SETTING_SPLIT, SETTING_DIRECTION);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -94,7 +100,30 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
             case SETTING_SPLIT:
                 sSplit = (byte) sharedPreferences.getInt(SETTING_SPLIT, SPLIT_AUTO);
                 break;
+            case SETTING_DIRECTION:
+                sDirection = (byte) sharedPreferences.getInt(SETTING_DIRECTION, DIRECTION_LR);
+                break;
         }
+    }
+
+    /**
+     * 获取翻页方向
+     *
+     * @return
+     */
+    public byte getsDirection() {
+        return sDirection;
+    }
+
+    /**
+     * 设定翻页方向
+     *
+     * @return
+     */
+    public void setsDirection(byte sDirection) {
+        if (sDirection < DIRECTION_LR || sDirection > DIRECTION_RL) return;
+        editor.putInt(SETTING_DIRECTION, sDirection);
+        editor.commit();
     }
 
     /**
@@ -131,6 +160,7 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
      * @param sSplit
      */
     public void setsSplit(byte sSplit) {
+        if (sSplit < SPLIT_AUTO || sSplit > SPLIT_FORCE) return;
         editor.putInt(SETTING_SPLIT, sSplit);
         editor.commit();
     }
