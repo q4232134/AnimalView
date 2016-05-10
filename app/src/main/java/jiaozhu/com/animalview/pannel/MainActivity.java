@@ -15,18 +15,23 @@ import android.view.View;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.SelectorRecyclerAdapter;
+import jiaozhu.com.animalview.dao.DBHelper;
+import jiaozhu.com.animalview.dao.FileDao;
 import jiaozhu.com.animalview.model.FileModel;
 import jiaozhu.com.animalview.pannel.Adapter.FileAdapter;
 import jiaozhu.com.animalview.support.Constants;
 import jiaozhu.com.animalview.support.Preferences;
+import jiaozhu.com.animalview.support.Tools;
 
 public class MainActivity extends AppCompatActivity implements SelectorRecyclerAdapter.OnItemClickListener {
     private RecyclerView recyclerView;
@@ -52,8 +57,20 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             }
         });
 
+        initFileStatus();
         initData();
 
+    }
+
+    /**
+     * 初始化目录状态
+     */
+    private void initFileStatus() {
+        long t = System.currentTimeMillis();
+        ((DBHelper) FileDao.getInstance().getDbHelper()).onUpgrade();
+        List<FileModel> tempList = new ArrayList<>(Tools.getDirList(rootFile).values());
+        FileDao.getInstance().replace(tempList);
+        System.out.println(System.currentTimeMillis() - t);
     }
 
     private void initData() {
@@ -101,32 +118,32 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         }
         File historyFile = Preferences.getInstance().getHistoryFile();
         commList.clear();
-        File[] tempList = file.listFiles();
+        File[] tempList = file.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                if (file.getName().startsWith(".") || file.isFile() || file.isHidden())
+                    return false;
+                return true;
+            }
+        });
         if (tempList != null) {
-            for (File temp : tempList) {
-                if (temp.getName().startsWith(".")) continue;
-                FileModel model = new FileModel();
-                model.setFile(temp);
-                if (model.getStatus() == FileModel.STATUS_ZIP) {
-                    continue;
-                }
+            List<FileModel> models = FileDao.getInstance().getModelByFiles(tempList);
+            for (FileModel model : models) {
                 //在历史文件路径中的file全部标示
-                if (historyFile.getPath().startsWith(temp.getPath())) {
+                if (historyFile.getPath().startsWith(model.getPath())) {
                     model.setHistory(true);
                 }
                 if (model.getStatus() == FileModel.STATUS_SHOW || model.getStatus() == FileModel.STATUS_ZIP) {
                     commList.add(model);
                 }
-                //只显示符合要求的文件或目录
-                if (model.getStatus() != FileModel.STATUS_OTHER)
-                    list.add(model);
+                list.add(model);
             }
         }
         Collections.sort(list, new Comparator<FileModel>() {
             @TargetApi(Build.VERSION_CODES.KITKAT)
             @Override
             public int compare(FileModel m1, FileModel m2) {
-                return Byte.compare(m2.getStatus(), m1.getStatus());
+                return Integer.compare(m2.getStatus(), m1.getStatus());
             }
         });
         adapter.notifyDataSetChanged();
@@ -173,4 +190,10 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             default:
         }
     }
+
+    private Set<FileModel> getFileSet() {
+
+        return null;
+    }
+
 }

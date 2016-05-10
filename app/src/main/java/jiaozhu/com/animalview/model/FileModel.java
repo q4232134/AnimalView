@@ -13,6 +13,7 @@ import jiaozhu.com.animalview.support.Constants;
  */
 @Table(name = "animal_table")
 public class FileModel {
+    public static final String TABLE_NAME = "animal_table";
     public static final byte STATUS_NO_CHECK = 0;//未检查目录
     public static final byte STATUS_EMPTY = 1;//空目录
     public static final byte STATUS_SHOW = 2;//可用阅读器打开
@@ -21,29 +22,18 @@ public class FileModel {
     public static final byte STATUS_OTHER = 5;//未知文档
 
     @Id
-    @Column(name = "id", type = "integer")
-    private int id;
-
     @Column(name = "path", type = "varchar2")
     private String path;
 
     private File file;
 
     @Column(name = "status", type = "integer")
-    private byte status;
+    private int status;
 
     @Column(name = "lastPage", type = "integer")
     private int lastPage = -1;//最后阅读页,-1为新记录
 
     private boolean isHistory = false;//是否为历史记录
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public File getFile() {
         if (file == null)
@@ -56,7 +46,7 @@ public class FileModel {
         path = file.getPath();
     }
 
-    public byte getStatus() {
+    public int getStatus() {
         if (status == STATUS_NO_CHECK) {
             status = getFileStatus();
 //            FileDao.getInstance().update(this);
@@ -64,7 +54,7 @@ public class FileModel {
         return status;
     }
 
-    public void setStatus(byte status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 

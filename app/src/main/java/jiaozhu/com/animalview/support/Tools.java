@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -36,12 +37,15 @@ import java.io.InputStreamReader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import jiaozhu.com.animalview.commonTools.Log;
+import jiaozhu.com.animalview.model.FileModel;
 
 /**
  * Created by Administrator on 2014/6/20.
@@ -586,11 +590,50 @@ public class Tools {
     }
 
     /**
-     * 图片切割方法
+     * 支持文件过滤器
+     */
+    public static FileFilter imageFilter = new FileFilter() {
+        @Override
+        public boolean accept(File file) {
+            if (file.getName().startsWith(".")) return false;
+            if (file.isHidden()) return false;
+            if (file.isDirectory()) return true;
+            for (String temp : Constants.IMAGE_TYPE) {
+                if (file.getName().toLowerCase().endsWith(temp)) return true;
+            }
+            return false;
+        }
+    };
+
+
+    /**
+     * 获取目录列表，并完成状态标记
      *
-     * @param bitmap 图片
+     * @param file
      * @return
      */
+    public static Map<String, FileModel> getDirList(File file) {
+        Map<String, FileModel> map = new HashMap<>();
+        if (file.isDirectory()) {
+            int status = FileModel.STATUS_EMPTY;
+            for (File temp : file.listFiles(imageFilter)) {
+                if (temp.isDirectory()) {
+                    status = FileModel.STATUS_OPEN;
+                    map.putAll(getDirList(temp));
+                } else {
+                    if (status == FileModel.STATUS_EMPTY)
+                        status = FileModel.STATUS_SHOW;
+                }
+            }
+            FileModel model = new FileModel();
+            model.setFile(file);
+            model.setPath(file.getPath());
+            model.setStatus(status);
+            map.put(file.getPath(), model);
+        }
+        return map;
+    }
+
     /**
      * 图片切割方法
      *

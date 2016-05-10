@@ -615,7 +615,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
                     bm = Tools.getBitmap(list.get(position).getPath());
                     switch (splitStatus) {
                         case Preferences.SPLIT_AUTO:
-                            if (bm.getHeight() < bm.getWidth() * 3 / 4) {
+                            if (bm != null && bm.getHeight() < bm.getWidth() * 3 / 4) {
                                 getBitmapList(bm);
                             } else {
                                 tempList.add(bm);
