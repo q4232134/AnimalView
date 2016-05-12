@@ -1,8 +1,11 @@
 package jiaozhu.com.animalview.pannel;
 
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,6 +26,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import jiaozhu.com.animalview.R;
+import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.commonTools.SelectorRecyclerAdapter;
 import jiaozhu.com.animalview.dao.DBHelper;
 import jiaozhu.com.animalview.dao.FileDao;
@@ -39,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     private FileAdapter adapter;
     private Stack<File> stack = new Stack<>();//路径堆栈
     private List<FileModel> commList;
+    private ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,10 +57,10 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                initFileStatus();
+                showInitDialog();
             }
         });
-
+        initProgressDialog();
         initData();
         //数据库是否存在
         if (getDatabasePath(Constants.DB_NAME).exists()) {
@@ -63,28 +68,58 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         } else {
             initFileStatus();
         }
-
     }
+
+    private void initProgressDialog() {
+        dialog = new ProgressDialog(this);
+        dialog.setTitle("正在初始化目录结构");
+        dialog.setCancelable(false);
+    }
+
+    private void showInitDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("是否重新初始化目录结构");
+        builder.setNegativeButton("取消", null);
+        builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                initFileStatus();
+            }
+        });
+        builder.create().show();
+    }
+
 
     /**
      * 初始化目录状态
      * 重新计算目录状态，保留之前历史记录
      */
     private void initFileStatus() {
-        long t = System.currentTimeMillis();
-        ((DBHelper) FileDao.getInstance().getDbHelper()).onUpgrade();
-        Map<String, FileModel> newMap = Tools.getDirList(rootFile);
-        Map<String, FileModel> oldMap = FileDao.getInstance().getModelsByPaths(newMap.keySet());
-        for (Map.Entry<String, FileModel> entry : newMap.entrySet()) {
-            FileModel temp = oldMap.get(entry.getKey());
-            if (temp != null) {
-                entry.getValue().setLastPage(temp.getLastPage());
+        dialog.show();
+        BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
+            @Override
+            public void runnable() {
+                long t = System.currentTimeMillis();
+                ((DBHelper) FileDao.getInstance().getDbHelper()).onUpgrade();
+                Map<String, FileModel> newMap = Tools.getDirList(rootFile);
+                Map<String, FileModel> oldMap = FileDao.getInstance().getModelsByPaths(newMap.keySet());
+                for (Map.Entry<String, FileModel> entry : newMap.entrySet()) {
+                    FileModel temp = oldMap.get(entry.getKey());
+                    if (temp != null) {
+                        entry.getValue().setLastPage(temp.getLastPage());
+                    }
+                }
+                FileDao.getInstance().replace(new ArrayList<>(newMap.values()));
+                System.out.println(System.currentTimeMillis() - t);
             }
-        }
-        FileDao.getInstance().replace(new ArrayList<>(newMap.values()));
-        Toast.makeText(this, "数据初始化成功", Toast.LENGTH_SHORT).show();
-        System.out.println(System.currentTimeMillis() - t);
-        fresh();
+
+            @Override
+            public void onBackgroundFinished() {
+                Toast.makeText(MainActivity.this, "数据初始化成功", Toast.LENGTH_SHORT).show();
+                fresh();
+                dialog.dismiss();
+            }
+        });
     }
 
     /**
@@ -165,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                     FileDao.getInstance().replace(model);
                 }
                 //在历史文件路径中的file全部标示
-                if ((historyFile.getPath()+"/").startsWith(model.getPath()+"/")) {
+                if ((historyFile.getPath() + "/").startsWith(model.getPath() + "/")) {
                     model.setHistory(true);
                 }
                 if (model.getStatus() == FileModel.STATUS_SHOW || model.getStatus() == FileModel.STATUS_ZIP) {

@@ -146,8 +146,6 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
                     mViewPager.setCurrentItem(progress, false);
             }
         });
-//        currentModel = commList.get(getIntent().getIntExtra(INDEX, 0));
-//        fresh(getIntent().getIntExtra(PAGE_NUM, 0));
         setAnimal(getIntent().getIntExtra(INDEX, 0));
     }
 
