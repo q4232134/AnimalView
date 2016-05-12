@@ -5,6 +5,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.tgb.lk.ahibernate.dao.impl.BaseDaoImpl;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -40,12 +42,40 @@ public class FileDao extends BaseDaoImpl<FileModel> {
      * @param files
      * @return
      */
-    public Map<String, FileModel> getModelsByFiles(List<File> files) {
-        Map<String, FileModel> map = new Hashtable<>();
-        if (files.isEmpty()) return map;
-        StringBuffer sb = new StringBuffer();
+    public Map<String, FileModel> getModelsByFiles(Collection<File> files) {
+        List<String> list = new ArrayList<>();
         for (File temp : files) {
-            sb.append(" '").append(temp.getPath()).append("' ,");
+            list.add(temp.getPath());
+        }
+        return getModelsByPaths(list);
+    }
+
+    /**
+     * 获取文件对应的model(如果存在的话)
+     *
+     * @param models
+     * @return
+     */
+    public Map<String, FileModel> getModelsByModels(Collection<FileModel> models) {
+        List<String> list = new ArrayList<>();
+        for (FileModel temp : models) {
+            list.add(temp.getPath());
+        }
+        return getModelsByPaths(list);
+    }
+
+    /**
+     * 获取路径对应的model(如果存在的话)
+     *
+     * @param paths
+     * @return
+     */
+    public Map<String, FileModel> getModelsByPaths(Collection<String> paths) {
+        Map<String, FileModel> map = new Hashtable<>();
+        if (paths.isEmpty()) return map;
+        StringBuffer sb = new StringBuffer();
+        for (String temp : paths) {
+            sb.append(" '").append(temp).append("' ,");
         }
         String temp = sb.substring(0, sb.length() - 2);
         List<FileModel> list = rawQuery("select * from " + FileModel.TABLE_NAME + " where path in ( " + temp + " )",

@@ -56,26 +56,35 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             }
         });
 
+        initData();
         //数据库是否存在
         if (getDatabasePath(Constants.DB_NAME).exists()) {
             deleteUnExistData();
         } else {
             initFileStatus();
         }
-        initData();
 
     }
 
     /**
      * 初始化目录状态
+     * 重新计算目录状态，保留之前历史记录
      */
     private void initFileStatus() {
         long t = System.currentTimeMillis();
         ((DBHelper) FileDao.getInstance().getDbHelper()).onUpgrade();
-        List<FileModel> tempList = new ArrayList<>(Tools.getDirList(rootFile).values());
-        FileDao.getInstance().replace(tempList);
+        Map<String, FileModel> newMap = Tools.getDirList(rootFile);
+        Map<String, FileModel> oldMap = FileDao.getInstance().getModelsByPaths(newMap.keySet());
+        for (Map.Entry<String, FileModel> entry : newMap.entrySet()) {
+            FileModel temp = oldMap.get(entry.getKey());
+            if (temp != null) {
+                entry.getValue().setLastPage(temp.getLastPage());
+            }
+        }
+        FileDao.getInstance().replace(new ArrayList<>(newMap.values()));
         Toast.makeText(this, "数据初始化成功", Toast.LENGTH_SHORT).show();
         System.out.println(System.currentTimeMillis() - t);
+        fresh();
     }
 
     /**
@@ -156,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                     FileDao.getInstance().replace(model);
                 }
                 //在历史文件路径中的file全部标示
-                if (historyFile.getPath().startsWith(model.getPath())) {
+                if ((historyFile.getPath()+"/").startsWith(model.getPath()+"/")) {
                     model.setHistory(true);
                 }
                 if (model.getStatus() == FileModel.STATUS_SHOW || model.getStatus() == FileModel.STATUS_ZIP) {
