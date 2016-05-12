@@ -21,6 +21,7 @@ public class CApplication extends Application {
 
         Preferences.init(this);
         FileDao.init(dbHelper);
+        FileDao.setDebug(true);
 
         initPath(Constants.ROOT_DIR, Constants.CACHE_DIR);
         if (!Constants.NO_MEDIA.exists()) {

@@ -5,6 +5,7 @@ import com.tgb.lk.ahibernate.annotation.Id;
 import com.tgb.lk.ahibernate.annotation.Table;
 
 import java.io.File;
+import java.util.Date;
 
 import jiaozhu.com.animalview.support.Constants;
 
@@ -12,7 +13,7 @@ import jiaozhu.com.animalview.support.Constants;
  * Created by jiaozhu on 16/4/14.
  */
 @Table(name = "animal_table")
-public class FileModel {
+public class FileModel{
     public static final String TABLE_NAME = "animal_table";
     public static final byte STATUS_NO_CHECK = 0;//未检查目录
     public static final byte STATUS_EMPTY = 1;//空目录
@@ -28,10 +29,13 @@ public class FileModel {
     private File file;
 
     @Column(name = "status", type = "integer")
-    private int status;
+    private int status = STATUS_NO_CHECK;
 
     @Column(name = "lastPage", type = "integer")
     private int lastPage = -1;//最后阅读页,-1为新记录
+
+    @Column(name = "createTime", type = "date")
+    private Date createTime = new Date();//创建时间
 
     private boolean isHistory = false;//是否为历史记录
 
@@ -49,7 +53,6 @@ public class FileModel {
     public int getStatus() {
         if (status == STATUS_NO_CHECK) {
             status = getFileStatus();
-//            FileDao.getInstance().update(this);
         }
         return status;
     }
@@ -80,6 +83,14 @@ public class FileModel {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
     }
 
     /**
@@ -117,5 +128,17 @@ public class FileModel {
             if (tempName.endsWith(type)) return true;
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return "FileModel{" +
+                "path='" + path + '\'' +
+                ", file=" + file +
+                ", status=" + status +
+                ", lastPage=" + lastPage +
+                ", createTime=" + createTime +
+                ", isHistory=" + isHistory +
+                '}';
     }
 }

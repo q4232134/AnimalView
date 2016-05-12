@@ -4,6 +4,7 @@
     <file url="jar://$PROJECT_DIR$/app/libs/Ahibernate.jar!/com/tgb/lk/ahibernate/dao/BaseDao.java" charset="GBK" />
     <file url="jar://$PROJECT_DIR$/app/libs/Ahibernate.jar!/com/tgb/lk/ahibernate/dao/impl/BaseDaoImpl.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/app/src/main/java/jiaozhu/com/animalview/commonTools/Log.java" charset="UTF-8" />
+    <file url="jar://$PROJECT_DIR$/../eism-svn/app/libs/Ahibernate.jar!/com/tgb/lk/ahibernate/dao/impl/BaseDaoImpl.java" charset="GBK" />
     <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>

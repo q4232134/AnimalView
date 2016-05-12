@@ -21,6 +21,12 @@ public class Constants {
     public static final float CENTER_HEIGHT = 0.4f;
 
     /**
+     * 历史记录保存长度
+     */
+//    public static final long HISTORY_DURATION = 30 * 24 * 60 * 60 * 1000;//历史记录保存一个月
+    public static final long HISTORY_DURATION = 0;
+
+    /**
      * 隐藏界面延迟时间
      */
     public static final long HIDE_UI_DELAY = 3500;

@@ -27,6 +27,7 @@ import java.util.List;
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.commonTools.HackyViewPager;
+import jiaozhu.com.animalview.dao.FileDao;
 import jiaozhu.com.animalview.model.FileModel;
 import jiaozhu.com.animalview.pannel.Adapter.BasePagerAdapter;
 import jiaozhu.com.animalview.pannel.Interface.OnViewClickListener;
@@ -44,6 +45,7 @@ import uk.co.senab.photoview.PhotoViewAttacher;
 @SuppressWarnings("WrongConstant")
 public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener,
         OnViewClickListener {
+    private static final int LAST_PAGE = -2;
     private FrameLayout mLayout;
     private View mToolBar;
     private SeekBar mSeekBar;
@@ -56,13 +58,14 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     private List<File> list = new ArrayList<>();
     private ImagePagerAdapter adapter;
 
+
     private byte splitStatus = Preferences.SPLIT_AUTO;
     private byte directionStatus = Preferences.DIRECTION_LR;
     private boolean uiShowed = false;
     private List<FileModel> commList;
     private boolean showLastPageByChild = false;//双页图片载入时是否应当默认先显示后一页(从后向前翻页时需要先显示后一页)
 
-    private static final boolean autoHide = false;
+    private static final boolean autoHide = true;
 
     public static final byte TOUCH_CENTER = 0;
     public static final byte TOUCH_FRONT = 1;
@@ -78,7 +81,6 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     private static int SHOW_UI = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
     private Handler handler = new Handler();
-    private byte directName;
 
 
     @Override
@@ -144,8 +146,9 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
                     mViewPager.setCurrentItem(progress, false);
             }
         });
-        currentModel = commList.get(getIntent().getIntExtra(INDEX, 0));
-        fresh(getIntent().getIntExtra(PAGE_NUM, 0));
+//        currentModel = commList.get(getIntent().getIntExtra(INDEX, 0));
+//        fresh(getIntent().getIntExtra(PAGE_NUM, 0));
+        setAnimal(getIntent().getIntExtra(INDEX, 0));
     }
 
     /**
@@ -241,7 +244,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
         mSeekBar.setProgress(0);
         freshPageNum();
         adapter.notifyDataSetChanged();
-        if (pageNum == -1)
+        if (pageNum == LAST_PAGE)
             pageNum = adapter.getCount() - 1;
         mViewPager.setCurrentItem(pageNum, false);
     }
@@ -318,7 +321,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     private void toNextPage(BasePagerAdapter adapter) {
         showLastPageByChild = false;
         if (!adapter.toNextPage()) {
-            setAnimal(commList.indexOf(currentModel) + 1, 0);
+            setAnimal(commList.indexOf(currentModel) + 1);
         }
     }
 
@@ -328,7 +331,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     private void toPreviousPage(BasePagerAdapter adapter) {
         showLastPageByChild = true;
         if (!adapter.toPreviousPage()) {
-            setAnimal(commList.indexOf(currentModel) - 1, -1);
+            setAnimal(commList.indexOf(currentModel) - 1);
         }
     }
 
@@ -336,9 +339,8 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
      * 设置当前显示的目录
      *
      * @param index   需要显示的目录
-     * @param pageNum 刷新之后显示的页码,-1代表最后一页
      */
-    private void setAnimal(int index, int pageNum) {
+    private void setAnimal(int index) {
         if (index < 0) {
             Toast.makeText(this, "已经是第一篇了哦", Toast.LENGTH_SHORT).show();
             return;
@@ -347,9 +349,13 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
             Toast.makeText(this, "已经是最后一篇了哦", Toast.LENGTH_SHORT).show();
             return;
         }
+        if (currentModel != null) {
+            currentModel.setLastPage(mViewPager.getCurrentItem());
+            FileDao.getInstance().update(currentModel);
+        }
         currentModel = commList.get(index);
         Snackbar.make(mViewPager, currentModel.getFile().getName(), Snackbar.LENGTH_SHORT).show();
-        fresh(pageNum);
+        fresh(currentModel.getLastPage());
     }
 
     /**
@@ -365,7 +371,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
             public void run() {
                 int position = commList.indexOf(currentModel);
                 commList.remove(currentModel);
-                setAnimal(position, 0);
+                setAnimal(position);
             }
         });
     }
@@ -418,7 +424,6 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
      * @return
      */
     private String getSplitName() {
-        System.out.println(splitStatus);
         switch (splitStatus) {
             case Preferences.SPLIT_AUTO:
                 return "自动分页";
@@ -433,7 +438,9 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
 
     @Override
     protected void onPause() {
-        Preferences.getInstance().saveHistory(currentModel.getFile(), mViewPager.getCurrentItem());
+        currentModel.setLastPage(mViewPager.getCurrentItem());
+        FileDao.getInstance().update(currentModel);
+        Preferences.getInstance().saveHistory(currentModel.getFile());
         super.onPause();
     }
 
@@ -445,7 +452,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
      */
     public void onNextClick(View view) {
         showLastPageByChild = false;
-        setAnimal(commList.indexOf(currentModel) + 1, 0);
+        setAnimal(commList.indexOf(currentModel) + 1);
         delayedRun(Constants.HIDE_UI_DELAY);
     }
 

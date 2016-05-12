@@ -37,7 +37,6 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
      * 历史记录
      */
     private static final String HISTORY_FILE = "history-file";
-    private static final String HISTORY_PAGE = "history-page";
     /**
      * 设定
      */
@@ -51,7 +50,6 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
     public static List<FileModel> list = new ArrayList<>();//当前文件列表
 
     private File historyFile;//最后阅读文件
-    private int historyPage;//最后阅读页数
     private int sRotation;//旋转状态
     private byte sSplit;//分页状态
     private byte sDirection;//分页方向
@@ -72,7 +70,7 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
         sharedPreferences = context.getSharedPreferences(SHAREDPREFERENCES_NAME,
                 Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
-        initDate(sharedPreferences, HISTORY_FILE, HISTORY_PAGE, SETTING_ROTATION, SETTING_SPLIT, SETTING_DIRECTION);
+        initDate(sharedPreferences, HISTORY_FILE, SETTING_ROTATION, SETTING_SPLIT, SETTING_DIRECTION);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -90,9 +88,6 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
         switch (key) {
             case HISTORY_FILE:
                 historyFile = new File(sharedPreferences.getString(HISTORY_FILE, ""));
-                break;
-            case HISTORY_PAGE:
-                historyPage = sharedPreferences.getInt(HISTORY_PAGE, 0);
                 break;
             case SETTING_ROTATION:
                 sRotation = sharedPreferences.getInt(SETTING_ROTATION, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
@@ -169,21 +164,10 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
      * 保存历史记录
      *
      * @param file
-     * @param pageNum
      */
-    public void saveHistory(File file, int pageNum) {
+    public void saveHistory(File file) {
         editor.putString(HISTORY_FILE, file.getPath());
-        editor.putInt(HISTORY_PAGE, pageNum);
         editor.commit();
-    }
-
-    /**
-     * 读取最后阅读页数
-     *
-     * @return
-     */
-    public int getHistoryPage() {
-        return historyPage;
     }
 
     /**

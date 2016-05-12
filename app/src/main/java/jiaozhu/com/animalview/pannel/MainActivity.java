@@ -1,8 +1,6 @@
 package jiaozhu.com.animalview.pannel;
 
-import android.annotation.TargetApi;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -17,10 +15,11 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.Stack;
 
 import jiaozhu.com.animalview.R;
@@ -53,11 +52,16 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                upDir();
+                initFileStatus();
             }
         });
 
-        initFileStatus();
+        //数据库是否存在
+        if (getDatabasePath(Constants.DB_NAME).exists()) {
+            deleteUnExistData();
+        } else {
+            initFileStatus();
+        }
         initData();
 
     }
@@ -70,7 +74,21 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         ((DBHelper) FileDao.getInstance().getDbHelper()).onUpgrade();
         List<FileModel> tempList = new ArrayList<>(Tools.getDirList(rootFile).values());
         FileDao.getInstance().replace(tempList);
+        Toast.makeText(this, "数据初始化成功", Toast.LENGTH_SHORT).show();
         System.out.println(System.currentTimeMillis() - t);
+    }
+
+    /**
+     * 查询数据库并清除无用数据
+     */
+    private void deleteUnExistData() {
+        List<FileModel> list = FileDao.getInstance()
+                .getModelByTime(System.currentTimeMillis() - Constants.HISTORY_DURATION);
+        for (FileModel model : list) {
+            if (!model.getFile().exists()) {
+                FileDao.getInstance().delete(model.getPath());
+            }
+        }
     }
 
     private void initData() {
@@ -118,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         }
         File historyFile = Preferences.getInstance().getHistoryFile();
         commList.clear();
-        File[] tempList = file.listFiles(new FileFilter() {
+        File[] files = file.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
                 if (file.getName().startsWith(".") || file.isFile() || file.isHidden())
@@ -126,9 +144,17 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 return true;
             }
         });
-        if (tempList != null) {
-            List<FileModel> models = FileDao.getInstance().getModelByFiles(tempList);
-            for (FileModel model : models) {
+        if (files != null) {
+            Map<String, FileModel> models = FileDao.getInstance().getModelsByFiles(Arrays.asList(files));
+            for (File temp : files) {
+                FileModel model = models.get(temp.getPath());
+                //数据库不存在则创建model并存入数据库
+                if (model == null) {
+                    model = new FileModel();
+                    model.setFile(temp);
+                    model.getStatus();
+                    FileDao.getInstance().replace(model);
+                }
                 //在历史文件路径中的file全部标示
                 if (historyFile.getPath().startsWith(model.getPath())) {
                     model.setHistory(true);
@@ -140,13 +166,16 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             }
         }
         Collections.sort(list, new Comparator<FileModel>() {
-            @TargetApi(Build.VERSION_CODES.KITKAT)
             @Override
             public int compare(FileModel m1, FileModel m2) {
-                return Integer.compare(m2.getStatus(), m1.getStatus());
+                return compareInt(m2.getStatus(), m1.getStatus());
             }
         });
         adapter.notifyDataSetChanged();
+    }
+
+    private static int compareInt(int lhs, int rhs) {
+        return lhs < rhs ? -1 : (lhs == rhs ? 0 : 1);
     }
 
     @Override
@@ -174,10 +203,6 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 Intent i = new Intent();
                 i.setClass(this, AnimalActivity.class);
                 i.putExtra(AnimalActivity.INDEX, commList.indexOf(model));
-                //如果有历史记录则进行载入
-                if (model.isHistory()) {
-                    i.putExtra(AnimalActivity.PAGE_NUM, Preferences.getInstance().getHistoryPage());
-                }
                 startActivity(i);
                 break;
             case FileModel.STATUS_OPEN:
@@ -190,10 +215,4 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             default:
         }
     }
-
-    private Set<FileModel> getFileSet() {
-
-        return null;
-    }
-
 }

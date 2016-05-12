@@ -5,8 +5,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.tgb.lk.ahibernate.dao.impl.BaseDaoImpl;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import jiaozhu.com.animalview.model.FileModel;
@@ -33,14 +34,36 @@ public class FileDao extends BaseDaoImpl<FileModel> {
         dao = new FileDao(dbHelper);
     }
 
-    public List<FileModel> getModelByFiles(File... files) {
-        if (files.length == 0) return new ArrayList<>();
+    /**
+     * 获取文件对应的model(如果存在的话)
+     *
+     * @param files
+     * @return
+     */
+    public Map<String, FileModel> getModelsByFiles(List<File> files) {
+        Map<String, FileModel> map = new Hashtable<>();
+        if (files.isEmpty()) return map;
         StringBuffer sb = new StringBuffer();
         for (File temp : files) {
             sb.append(" '").append(temp.getPath()).append("' ,");
         }
         String temp = sb.substring(0, sb.length() - 2);
-        return rawQuery("select * from " + FileModel.TABLE_NAME + " where path in ( " + temp + " )",
+        List<FileModel> list = rawQuery("select * from " + FileModel.TABLE_NAME + " where path in ( " + temp + " )",
                 null);
+        for (FileModel model : list) {
+            map.put(model.getPath(), model);
+        }
+        return map;
+    }
+
+    /**
+     * 查询指定时间之前的model
+     *
+     * @param date
+     * @return
+     */
+    public List<FileModel> getModelByTime(long date) {
+        return rawQuery("select * from " + FileModel.TABLE_NAME + " where createTime < ?",
+                new String[]{date + ""});
     }
 }

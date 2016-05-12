@@ -53,6 +53,11 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
         } else {
             holder.mTitle.setText(model.getFile().getName());
         }
+        if (model.getLastPage() == -1 && model.getStatus() == FileModel.STATUS_SHOW) {
+            holder.mNewMark.setVisibility(View.VISIBLE);
+        } else {
+            holder.mNewMark.setVisibility(View.GONE);
+        }
         if (isSelected) {
             holder.mSelectView.setVisibility(View.VISIBLE);
             holder.mView.setBackgroundColor(resource.getColor(R.color.main_item_selected_bg));
@@ -75,7 +80,7 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public View mView, mSelectView, mPoint;
-        public TextView mTitle;
+        public TextView mTitle, mNewMark;
 
         public ViewHolder(View v) {
             super(v);
@@ -83,6 +88,7 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
             mSelectView = v.findViewById(R.id.selectView);
             mTitle = (TextView) v.findViewById(R.id.title);
             mPoint = v.findViewById(R.id.point);
+            mNewMark = (TextView) v.findViewById(R.id.newMark);
         }
 
     }
