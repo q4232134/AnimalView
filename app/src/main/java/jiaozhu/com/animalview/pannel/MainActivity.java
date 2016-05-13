@@ -252,54 +252,63 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     }
 
     void fresh() {
-        long l = System.currentTimeMillis();
+        final long l = System.currentTimeMillis();
         list.clear();
-        File file = stack.peek();
+        final File file = stack.peek();
         if (!file.exists()) {
             Toast.makeText(this, "目录不存在", Toast.LENGTH_SHORT).show();
         }
-        File historyFile = Preferences.getInstance().getHistoryFile();
-        commList.clear();
-        File[] files = file.listFiles(new FileFilter() {
+        BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
             @Override
-            public boolean accept(File file) {
-                if (file.getName().startsWith(".") || file.isFile() || file.isHidden())
-                    return false;
-                return true;
-            }
-        });
-        if (files != null) {
-            Map<String, FileModel> models = FileDao.getInstance().getModelsByFiles(Arrays.asList(files));
-            for (File temp : files) {
-                FileModel model = models.get(temp.getPath());
-                //数据库不存在则创建model并存入数据库
-                if (model == null) {
-                    model = new FileModel();
-                    model.setFile(temp);
-                    model.getStatus();
-                    FileDao.getInstance().replace(model);
-                }
-                //在历史文件路径中的file全部标示
-                if ((historyFile.getPath() + "/").startsWith(model.getPath() + "/")) {
-                    model.setHistory(true);
-                }
-                //判断是否需要显示在目录与是否能够打开
-                if (model.showInList()) {
-                    list.add(model);
-                    if (model.animalAble()) {
-                        commList.add(model);
+            public void runnable() {
+                File historyFile = Preferences.getInstance().getHistoryFile();
+                commList.clear();
+                File[] files = file.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(File file) {
+                        if (file.getName().startsWith(".") || file.isFile() || file.isHidden())
+                            return false;
+                        return true;
+                    }
+                });
+                if (files != null) {
+                    Map<String, FileModel> models = FileDao.getInstance().getModelsByFiles(Arrays.asList(files));
+                    for (File temp : files) {
+                        FileModel model = models.get(temp.getPath());
+                        //数据库不存在则创建model并存入数据库
+                        if (model == null) {
+                            model = new FileModel();
+                            model.setFile(temp);
+                            model.getStatus();
+                            FileDao.getInstance().replace(model);
+                        }
+                        //在历史文件路径中的file全部标示
+                        if ((historyFile.getPath() + "/").startsWith(model.getPath() + "/")) {
+                            model.setHistory(true);
+                        }
+                        //判断是否需要显示在目录与是否能够打开
+                        if (model.showInList()) {
+                            list.add(model);
+                            if (model.animalAble()) {
+                                commList.add(model);
+                            }
+                        }
                     }
                 }
+                Collections.sort(list, new Comparator<FileModel>() {
+                    @Override
+                    public int compare(FileModel m1, FileModel m2) {
+                        return compareInt(m2.getStatus(), m1.getStatus());
+                    }
+                });
             }
-        }
-        Collections.sort(list, new Comparator<FileModel>() {
+
             @Override
-            public int compare(FileModel m1, FileModel m2) {
-                return compareInt(m2.getStatus(), m1.getStatus());
+            public void onBackgroundFinished() {
+                adapter.notifyDataSetChanged();
+                System.out.println("====================="+(System.currentTimeMillis()-l));
             }
         });
-        adapter.notifyDataSetChanged();
-        System.out.println("====================="+(System.currentTimeMillis()-l));
     }
 
     private static int compareInt(int lhs, int rhs) {
