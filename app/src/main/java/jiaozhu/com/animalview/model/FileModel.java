@@ -95,7 +95,7 @@ public class FileModel {
      *
      * @return
      */
-    private File getCacheFile() {
+    public File getCacheFile() {
         String name = Tools.md516(path) + ".cache";
         return new File(Constants.CACHE_DIR + File.separator + name);
     }

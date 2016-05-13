@@ -185,6 +185,8 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         for (FileModel model : list) {
             if (!model.getFile().exists()) {
                 FileDao.getInstance().delete(model.getPath());
+                //删除缓存文件
+                model.getCacheFile().delete();
             }
         }
     }
