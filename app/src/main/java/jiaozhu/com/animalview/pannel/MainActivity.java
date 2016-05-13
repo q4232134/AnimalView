@@ -10,7 +10,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.ActionMode;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -19,6 +21,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -44,12 +47,13 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     private Stack<File> stack = new Stack<>();//路径堆栈
     private List<FileModel> commList;
     private ProgressDialog dialog;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         recyclerView = (RecyclerView) findViewById(R.id.list);
@@ -90,11 +94,60 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     }
 
 
+    private void showDeleteDialog(final List<FileModel> list) {
+        if (list.isEmpty()) return;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < Constants.DELETE_MESSAGE_LENGTH && i < list.size(); i++) {
+            sb.append(list.get(i).getFile().getName()).append("\n");
+        }
+        if (list.size() > Constants.DELETE_MESSAGE_LENGTH) {
+            sb.append("...");
+        }
+        builder.setTitle("确认删除以下目录:");
+        builder.setMessage(sb);
+        builder.setNegativeButton("取消", null);
+        builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deleteSelectFile(list);
+            }
+        });
+        builder.create().show();
+    }
+
+    /**
+     * 删除指定文件
+     *
+     * @param models
+     */
+    private void deleteSelectFile(final Collection<FileModel> models) {
+        dialog.setTitle("正在删除指定目录");
+        dialog.show();
+        BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
+            @Override
+            public void runnable() {
+                for (FileModel temp : models) {
+                    Tools.deleteDir(temp.getFile());
+                }
+            }
+
+            @Override
+            public void onBackgroundFinished() {
+                Toast.makeText(MainActivity.this, "删除完成", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+                fresh();
+            }
+        });
+    }
+
+
     /**
      * 初始化目录状态
      * 重新计算目录状态，保留之前历史记录
      */
     private void initFileStatus() {
+        dialog.setTitle("正在初始化目录结构");
         dialog.show();
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
             @Override
@@ -143,7 +196,30 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         recyclerView.setNestedScrollingEnabled(false);
         adapter = new FileAdapter(list, this);
         adapter.setOnItemClickListener(this);
-//        adapter.setSelectorMode(adapter.MODE_MULTI);
+        adapter.setSelectorMode(adapter.MODE_MULTI);
+        adapter.setActionView(toolbar, new SelectorRecyclerAdapter.ActionItemClickedListener() {
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.menu_action, menu);
+                return true;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                int id = item.getItemId();
+                switch (id) {
+                    case R.id.action_delete:
+                        List<FileModel> temps = new ArrayList<FileModel>();
+                        for (int position : adapter.getSelectList()) {
+                            temps.add(list.get(position));
+                        }
+                        showDeleteDialog(temps);
+                        return true;
+                }
+                return false;
+            }
+        });
         recyclerView.setAdapter(adapter);
     }
 
@@ -209,6 +285,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 list.add(model);
             }
         }
+        System.out.println(list.size());
         Collections.sort(list, new Comparator<FileModel>() {
             @Override
             public int compare(FileModel m1, FileModel m2) {

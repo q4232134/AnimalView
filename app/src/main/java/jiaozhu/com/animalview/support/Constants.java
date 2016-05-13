@@ -27,6 +27,11 @@ public class Constants {
     public static final long HISTORY_DURATION = 0;
 
     /**
+     * 删除消息最多显示列表长度
+     */
+    public static final int DELETE_MESSAGE_LENGTH = 8;
+
+    /**
      * 隐藏界面延迟时间
      */
     public static final long HIDE_UI_DELAY = 3500;
