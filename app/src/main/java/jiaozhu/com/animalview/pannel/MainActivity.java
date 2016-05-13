@@ -31,7 +31,6 @@ import java.util.Stack;
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.commonTools.SelectorRecyclerAdapter;
-import jiaozhu.com.animalview.dao.DBHelper;
 import jiaozhu.com.animalview.dao.FileDao;
 import jiaozhu.com.animalview.model.FileModel;
 import jiaozhu.com.animalview.pannel.Adapter.FileAdapter;
@@ -82,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
 
     private void showInitDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("是否重新初始化目录结构");
+        builder.setTitle("是否刷新目录状态");
         builder.setNegativeButton("取消", null);
         builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
             @Override
@@ -94,6 +93,11 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     }
 
 
+    /**
+     * 显示删除对话框
+     *
+     * @param list
+     */
     private void showDeleteDialog(final List<FileModel> list) {
         if (list.isEmpty()) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -153,7 +157,6 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             @Override
             public void runnable() {
                 long t = System.currentTimeMillis();
-                ((DBHelper) FileDao.getInstance().getDbHelper()).onUpgrade();
                 Map<String, FileModel> newMap = Tools.getDirList(rootFile);
                 Map<String, FileModel> oldMap = FileDao.getInstance().getModelsByPaths(newMap.keySet());
                 for (Map.Entry<String, FileModel> entry : newMap.entrySet()) {

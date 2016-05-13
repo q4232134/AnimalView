@@ -75,9 +75,9 @@ public class FileDao extends BaseDaoImpl<FileModel> {
         if (paths.isEmpty()) return map;
         StringBuffer sb = new StringBuffer();
         for (String temp : paths) {
-            sb.append(" '").append(temp).append("' ,");
+            sb.append("'").append(temp).append("',");
         }
-        String temp = sb.substring(0, sb.length() - 2);
+        String temp = sb.substring(0, sb.length() - 1);
         List<FileModel> list = rawQuery("select * from " + FileModel.TABLE_NAME + " where path in ( " + temp + " )",
                 null);
         for (FileModel model : list) {
