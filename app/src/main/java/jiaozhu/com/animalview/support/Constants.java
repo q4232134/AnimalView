@@ -60,11 +60,11 @@ public class Constants {
     /**
      * 缓存文件高度
      */
-    public static final int CACHE_HEIGHT = 512;
+    public static final int CACHE_HEIGHT = 120;
     /**
      * 缓存文件宽度
      */
-    public static final int CACHE_WIDTH = 512;
+    public static final int CACHE_WIDTH = 120;
 
     /**
      * 可识别的图片类型

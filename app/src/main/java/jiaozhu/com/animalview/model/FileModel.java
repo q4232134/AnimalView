@@ -1,19 +1,26 @@
 package jiaozhu.com.animalview.model;
 
+import android.graphics.Bitmap;
+import android.support.annotation.Nullable;
+import android.widget.ImageView;
+
 import com.tgb.lk.ahibernate.annotation.Column;
 import com.tgb.lk.ahibernate.annotation.Id;
 import com.tgb.lk.ahibernate.annotation.Table;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.Date;
 
+import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.support.Constants;
+import jiaozhu.com.animalview.support.Tools;
 
 /**
  * Created by jiaozhu on 16/4/14.
  */
 @Table(name = "animal_table")
-public class FileModel{
+public class FileModel {
     public static final String TABLE_NAME = "animal_table";
     public static final byte STATUS_NO_CHECK = 0;//未检查目录
     public static final byte STATUS_EMPTY = 1;//空目录
@@ -55,6 +62,76 @@ public class FileModel{
             status = getFileStatus();
         }
         return status;
+    }
+
+    /**
+     * 由model判断图片的加载方式并进行加载
+     *
+     * @param view
+     */
+    public void setImageView(final ImageView view) {
+        //缓存图片是否存在
+        if (getCacheFile().exists()) {
+            view.setImageBitmap(getCacheImage());
+        } else {
+            BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
+                Bitmap bm;
+
+                @Override
+                public void runnable() {
+                    bm = getCacheImage();
+                }
+
+                @Override
+                public void onBackgroundFinished() {
+                    view.setImageBitmap(bm);
+                }
+            });
+        }
+    }
+
+    /**
+     * 获取cache路径
+     *
+     * @return
+     */
+    private File getCacheFile() {
+        String name = Tools.md516(path) + ".cache";
+        return new File(Constants.CACHE_DIR + File.separator + name);
+    }
+
+    /**
+     * 获取缓存图片
+     *
+     * @return
+     */
+    public Bitmap getCacheImage() {
+        if (getStatus() != STATUS_SHOW) return null;
+        Bitmap bm;
+        File file = getCacheFile();
+        if (file.exists()) {
+            bm = Tools.getBitmap(file.getPath());
+        } else {
+            bm = createCache();
+        }
+        return bm;
+    }
+
+    @Nullable
+    private Bitmap createCache() {
+        File[] files = getFile().listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                for (String temp : Constants.IMAGE_TYPE) {
+                    if (filename.toLowerCase().endsWith(temp)) return true;
+                }
+                return false;
+            }
+        });
+        if (files == null || files.length < 1) return null;
+        Bitmap bm = Tools.getImageThumbnail(files[0].getPath(), Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
+        Tools.saveBitmap(bm, getCacheFile());
+        return bm;
     }
 
     public void setStatus(int status) {
@@ -128,6 +205,25 @@ public class FileModel{
             if (tempName.endsWith(type)) return true;
         }
         return false;
+    }
+
+    /**
+     * 是否在列表显示
+     *
+     * @return
+     */
+    public boolean showInList() {
+        if (animalAble()) return true;
+        return getStatus() == STATUS_OPEN;
+    }
+
+    /**
+     * 是否能够当做漫画打开
+     *
+     * @return
+     */
+    public boolean animalAble() {
+        return getStatus() == STATUS_ZIP || getStatus() == STATUS_SHOW;
     }
 
     @Override

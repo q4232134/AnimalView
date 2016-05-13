@@ -12,6 +12,7 @@ import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -42,8 +43,8 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
-    public void onBindView(ViewHolder holder, int position, boolean isSelected) {
-        FileModel model = list.get(position);
+    public void onBindView(final ViewHolder holder, int position, boolean isSelected) {
+        final FileModel model = list.get(position);
         holder.mTitle.setText(model.getFile().getName());
         //高亮历史记录
         if (model.isHistory()) {
@@ -53,11 +54,13 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
         } else {
             holder.mTitle.setText(model.getFile().getName());
         }
+        //是否为新漫画
         if (model.getLastPage() == -1 && model.getStatus() == FileModel.STATUS_SHOW) {
             holder.mNewMark.setVisibility(View.VISIBLE);
         } else {
             holder.mNewMark.setVisibility(View.GONE);
         }
+        //是否被选择
         if (isSelected) {
             holder.mSelectView.setVisibility(View.VISIBLE);
             holder.mView.setBackgroundColor(resource.getColor(R.color.main_item_selected_bg));
@@ -65,10 +68,13 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
             holder.mSelectView.setVisibility(View.GONE);
             holder.mView.setBackground(null);
         }
+        //是否为可打开漫画
         if (model.getStatus() == FileModel.STATUS_SHOW) {
             holder.mPoint.setVisibility(View.VISIBLE);
+            model.setImageView(holder.mImage);
         } else {
             holder.mPoint.setVisibility(View.INVISIBLE);
+            holder.mImage.setImageResource(android.R.drawable.sym_def_app_icon);
         }
     }
 
@@ -81,6 +87,7 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public View mView, mSelectView, mPoint;
         public TextView mTitle, mNewMark;
+        public ImageView mImage;
 
         public ViewHolder(View v) {
             super(v);
@@ -89,6 +96,7 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
             mTitle = (TextView) v.findViewById(R.id.title);
             mPoint = v.findViewById(R.id.point);
             mNewMark = (TextView) v.findViewById(R.id.newMark);
+            mImage = (ImageView) v.findViewById(R.id.image);
         }
 
     }

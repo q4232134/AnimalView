@@ -156,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
             @Override
             public void runnable() {
-                long t = System.currentTimeMillis();
                 Map<String, FileModel> newMap = Tools.getDirList(rootFile);
                 Map<String, FileModel> oldMap = FileDao.getInstance().getModelsByPaths(newMap.keySet());
                 for (Map.Entry<String, FileModel> entry : newMap.entrySet()) {
@@ -166,7 +165,6 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                     }
                 }
                 FileDao.getInstance().replace(new ArrayList<>(newMap.values()));
-                System.out.println(System.currentTimeMillis() - t);
             }
 
             @Override
@@ -282,13 +280,15 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 if ((historyFile.getPath() + "/").startsWith(model.getPath() + "/")) {
                     model.setHistory(true);
                 }
-                if (model.getStatus() == FileModel.STATUS_SHOW || model.getStatus() == FileModel.STATUS_ZIP) {
-                    commList.add(model);
+                //判断是否需要显示在目录与是否能够打开
+                if (model.showInList()) {
+                    list.add(model);
+                    if (model.animalAble()) {
+                        commList.add(model);
+                    }
                 }
-                list.add(model);
             }
         }
-        System.out.println(list.size());
         Collections.sort(list, new Comparator<FileModel>() {
             @Override
             public int compare(FileModel m1, FileModel m2) {
