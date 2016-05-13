@@ -71,23 +71,19 @@ public class FileModel {
      */
     public void setImageView(final ImageView view) {
         //缓存图片是否存在
-        if (getCacheFile().exists()) {
-            view.setImageBitmap(getCacheImage());
-        } else {
-            BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
-                Bitmap bm;
+        BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
+            Bitmap bm;
 
-                @Override
-                public void runnable() {
-                    bm = getCacheImage();
-                }
+            @Override
+            public void runnable() {
+                bm = getCacheImage();
+            }
 
-                @Override
-                public void onBackgroundFinished() {
-                    view.setImageBitmap(bm);
-                }
-            });
-        }
+            @Override
+            public void onBackgroundFinished() {
+                view.setImageBitmap(bm);
+            }
+        });
     }
 
     /**

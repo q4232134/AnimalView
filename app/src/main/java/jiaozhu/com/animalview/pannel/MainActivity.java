@@ -252,6 +252,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     }
 
     void fresh() {
+        long l = System.currentTimeMillis();
         list.clear();
         File file = stack.peek();
         if (!file.exists()) {
@@ -298,6 +299,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             }
         });
         adapter.notifyDataSetChanged();
+        System.out.println("====================="+(System.currentTimeMillis()-l));
     }
 
     private static int compareInt(int lhs, int rhs) {

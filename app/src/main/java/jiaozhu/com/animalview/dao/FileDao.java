@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import jiaozhu.com.animalview.model.FileModel;
+import jiaozhu.com.animalview.support.Constants;
+import jiaozhu.com.animalview.support.Tools;
 
 /**
  * Created by jiaozhu on 16/5/9.
@@ -75,11 +77,11 @@ public class FileDao extends BaseDaoImpl<FileModel> {
         if (paths.isEmpty()) return map;
         StringBuffer sb = new StringBuffer();
         for (String temp : paths) {
-            sb.append("'").append(temp).append("',");
+            //对单引号进行特殊处理
+            sb.append("path = '").append(temp.replace("'","''")).append("' or ");
         }
-        String temp = sb.substring(0, sb.length() - 1);
-        List<FileModel> list = rawQuery("select * from " + FileModel.TABLE_NAME + " where path in ( " + temp + " )",
-                null);
+        String temp = sb.substring(0, sb.length() - 3);
+        List<FileModel> list = rawQuery("select * from " + FileModel.TABLE_NAME + " where  " + temp + " ",null);
         for (FileModel model : list) {
             map.put(model.getPath(), model);
         }
