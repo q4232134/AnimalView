@@ -18,7 +18,7 @@ import jiaozhu.com.animalview.model.FileModel;
 /**
  * 软件设置
  */
-public class Preferences implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class Preferences{
 
     public static final byte SPLIT_AUTO = 3;//自动分页
     public static final byte SPLIT_NONE = 4;//不分页
@@ -49,11 +49,6 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
 
     public static List<FileModel> list = new ArrayList<>();//当前文件列表
 
-    private File historyFile;//最后阅读文件
-    private int sRotation;//旋转状态
-    private byte sSplit;//分页状态
-    private byte sDirection;//分页方向
-
     public static void init(Context context) {
         preferences = new Preferences(context);
     }
@@ -70,36 +65,8 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
         sharedPreferences = context.getSharedPreferences(SHAREDPREFERENCES_NAME,
                 Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
-        initDate(sharedPreferences, HISTORY_FILE, SETTING_ROTATION, SETTING_SPLIT, SETTING_DIRECTION);
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
-    /**
-     * @param keys 初始化指定数据
-     */
-    private void initDate(SharedPreferences sharedPreferences, String... keys) {
-        for (String temp : keys) {
-            onSharedPreferenceChanged(sharedPreferences, temp);
-        }
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        switch (key) {
-            case HISTORY_FILE:
-                historyFile = new File(sharedPreferences.getString(HISTORY_FILE, ""));
-                break;
-            case SETTING_ROTATION:
-                sRotation = sharedPreferences.getInt(SETTING_ROTATION, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-                break;
-            case SETTING_SPLIT:
-                sSplit = (byte) sharedPreferences.getInt(SETTING_SPLIT, SPLIT_AUTO);
-                break;
-            case SETTING_DIRECTION:
-                sDirection = (byte) sharedPreferences.getInt(SETTING_DIRECTION, DIRECTION_LR);
-                break;
-        }
-    }
 
     /**
      * 获取翻页方向
@@ -107,7 +74,7 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
      * @return
      */
     public byte getsDirection() {
-        return sDirection;
+        return (byte) sharedPreferences.getInt(SETTING_DIRECTION, DIRECTION_LR);
     }
 
     /**
@@ -127,7 +94,7 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
      * @return
      */
     public int getsRotation() {
-        return sRotation;
+        return sharedPreferences.getInt(SETTING_ROTATION, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     /**
@@ -146,7 +113,7 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
      * @return
      */
     public byte getsSplit() {
-        return sSplit;
+        return (byte)sharedPreferences.getInt(SETTING_SPLIT, SPLIT_AUTO);
     }
 
     /**
@@ -176,6 +143,6 @@ public class Preferences implements SharedPreferences.OnSharedPreferenceChangeLi
      * @return
      */
     public File getHistoryFile() {
-        return historyFile;
+        return new File(sharedPreferences.getString(HISTORY_FILE, ""));
     }
 }
