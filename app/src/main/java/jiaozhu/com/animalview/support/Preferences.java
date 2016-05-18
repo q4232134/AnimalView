@@ -18,7 +18,7 @@ import jiaozhu.com.animalview.model.FileModel;
 /**
  * 软件设置
  */
-public class Preferences{
+public class Preferences {
 
     public static final byte SPLIT_AUTO = 3;//自动分页
     public static final byte SPLIT_NONE = 4;//不分页
@@ -27,6 +27,12 @@ public class Preferences{
 
     public static final byte DIRECTION_LR = 6;//分页方向从左到右
     public static final byte DIRECTION_RL = 7;//分页方向从右到左
+
+
+    public static final String ACTION_NONE = "none";//无
+    public static final String ACTION_NEXT = "next";//下一篇
+    public static final String ACTION_DELETE = "delete";//删除
+    public static final String ACTION_EXIT = "exit";//退出
 
     private static Preferences preferences;
     /**
@@ -44,7 +50,10 @@ public class Preferences{
     private static final String SETTING_ROTATION = "setting-rotation";//旋转状态
     private static final String SETTING_DIRECTION = "setting-direction";//分页方向
 
-    private static SharedPreferences sharedPreferences;
+    public static final String SETTING_LONG_CLICK = "setting-long-click";//长按
+    public static final String SETTING_DOUBLE_CLICK = "setting-double-click";//双击动作
+
+    public static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
 
     public static List<FileModel> list = new ArrayList<>();//当前文件列表
@@ -67,6 +76,24 @@ public class Preferences{
         editor = sharedPreferences.edit();
     }
 
+    /**
+     * 获取双击动作
+     *
+     * @return
+     */
+    public String getDoubleClickAction() {
+        return sharedPreferences.getString(SETTING_DOUBLE_CLICK, ACTION_NONE);
+    }
+
+
+    /**
+     * 获取长按动作
+     *
+     * @return
+     */
+    public String getLongClickAction() {
+        return sharedPreferences.getString(SETTING_LONG_CLICK, ACTION_NONE);
+    }
 
     /**
      * 获取翻页方向
@@ -113,7 +140,7 @@ public class Preferences{
      * @return
      */
     public byte getsSplit() {
-        return (byte)sharedPreferences.getInt(SETTING_SPLIT, SPLIT_AUTO);
+        return (byte) sharedPreferences.getInt(SETTING_SPLIT, SPLIT_AUTO);
     }
 
     /**

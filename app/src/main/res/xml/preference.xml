@@ -1,0 +1,15 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="点击动作设定">
+        <ListPreference
+            android:entries="@array/actions"
+            android:entryValues="@array/actions_value"
+            android:key="setting-long-click"
+            android:title="长按动作" />
+        <ListPreference
+            android:entries="@array/actions"
+            android:entryValues="@array/actions_value"
+            android:key="setting-double-click"
+            android:title="双击动作" />
+    </PreferenceCategory>
+</PreferenceScreen>

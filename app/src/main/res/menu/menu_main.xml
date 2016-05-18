@@ -3,4 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".pannel.MainActivity">
 
+    <item
+        android:id="@+id/action_settings"
+        android:title="设置"
+        app:showAsAction="always" />
 </menu>

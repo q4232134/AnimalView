@@ -246,9 +246,18 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             case android.R.id.home:
                 upDir();
                 break;
+            case R.id.action_settings:
+                toSettingActivity();
+                break;
             default:
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void toSettingActivity() {
+        Intent i = new Intent();
+        i.setClass(this, SettingsActivity.class);
+        startActivity(i);
     }
 
     void fresh() {
@@ -306,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             @Override
             public void onBackgroundFinished() {
                 adapter.notifyDataSetChanged();
-                System.out.println("====================="+(System.currentTimeMillis()-l));
+                System.out.println("=====================" + (System.currentTimeMillis() - l));
             }
         });
     }

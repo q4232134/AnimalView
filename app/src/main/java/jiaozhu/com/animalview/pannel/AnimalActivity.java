@@ -10,6 +10,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.GestureDetector;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,7 @@ import java.util.List;
 
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
+import jiaozhu.com.animalview.commonTools.DoubleTapListener;
 import jiaozhu.com.animalview.commonTools.HackyViewPager;
 import jiaozhu.com.animalview.dao.FileDao;
 import jiaozhu.com.animalview.model.FileModel;
@@ -70,6 +72,32 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     public static final byte TOUCH_CENTER = 0;
     public static final byte TOUCH_FRONT = 1;
     public static final byte TOUCH_AFTER = 2;
+
+    private Runnable doubleClickAction = null;
+    private Runnable longClickAction = null;
+
+    private Runnable noneAction = null;
+
+    private Runnable exitAction = new Runnable() {
+        @Override
+        public void run() {
+            finish();
+        }
+    };
+
+    private Runnable nextAction = new Runnable() {
+        @Override
+        public void run() {
+            onNextClick(null);
+        }
+    };
+
+    private Runnable deleteAction = new Runnable() {
+        @Override
+        public void run() {
+            onDeleteClick(null);
+        }
+    };
 
 
     private static int HIDE_UI = View.SYSTEM_UI_FLAG_LOW_PROFILE
@@ -119,10 +147,41 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
         mRotation.setText(getRotationName());
         mSplit.setText(getSplitName());
         mDirection.setText(getDirectName());
+        switch (Preferences.getInstance().getDoubleClickAction()) {
+            case Preferences.ACTION_NONE:
+                doubleClickAction = noneAction;
+                break;
+            case Preferences.ACTION_DELETE:
+                doubleClickAction = deleteAction;
+                break;
+            case Preferences.ACTION_EXIT:
+                doubleClickAction = exitAction;
+                break;
+            case Preferences.ACTION_NEXT:
+                doubleClickAction = nextAction;
+                break;
+            default:
+                doubleClickAction = noneAction;
+        }
+        switch (Preferences.getInstance().getLongClickAction()) {
+            case Preferences.ACTION_NONE:
+                longClickAction = noneAction;
+                break;
+            case Preferences.ACTION_DELETE:
+                longClickAction = deleteAction;
+                break;
+            case Preferences.ACTION_EXIT:
+                longClickAction = exitAction;
+                break;
+            case Preferences.ACTION_NEXT:
+                longClickAction = nextAction;
+                break;
+            default:
+                longClickAction = noneAction;
+        }
 
 
         showUI();
-
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progress = -1;
 
@@ -336,7 +395,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     /**
      * 设置当前显示的目录
      *
-     * @param index   需要显示的目录
+     * @param index 需要显示的目录
      */
     private void setAnimal(int index) {
         if (index < 0) {
@@ -564,6 +623,25 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
             final PhotoView photoView = new PhotoView(container.getContext());
             photoView.setImageBitmap(list.get(position));
             photoView.setOnViewTapListener(this);
+            if(doubleClickAction!=null){
+                final GestureDetector.OnDoubleTapListener doubleTapListener
+                        = new DoubleTapListener((PhotoViewAttacher) photoView.getIPhotoViewImplementation()) {
+                    @Override
+                    public void onDoubleCLick() {
+                        doubleClickAction.run();
+                    }
+                };
+                photoView.setOnDoubleTapListener(doubleTapListener);
+            }
+            if(longClickAction!=null){
+                photoView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        longClickAction.run();
+                        return true;
+                    }
+                });
+            }
             container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             return photoView;
         }

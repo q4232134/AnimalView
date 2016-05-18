@@ -12,8 +12,6 @@
         android:label="@string/app_name"
         android:largeHeap="true"
         android:supportsRtl="true"
-
-
         android:theme="@style/AppTheme">
         <activity
             android:name=".pannel.MainActivity"
@@ -30,7 +28,10 @@
             android:name=".pannel.AnimalActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_animal"
-            android:theme="@style/FullscreenTheme"></activity>
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".pannel.SettingsActivity"
+            android:label="@string/title_activity_settings"></activity>
     </application>
 
 </manifest>
