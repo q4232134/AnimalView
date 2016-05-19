@@ -30,6 +30,7 @@ import java.util.Stack;
 
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
+import jiaozhu.com.animalview.commonTools.Log;
 import jiaozhu.com.animalview.commonTools.SelectorRecyclerAdapter;
 import jiaozhu.com.animalview.dao.FileDao;
 import jiaozhu.com.animalview.model.FileModel;
@@ -39,6 +40,7 @@ import jiaozhu.com.animalview.support.Preferences;
 import jiaozhu.com.animalview.support.Tools;
 
 public class MainActivity extends AppCompatActivity implements SelectorRecyclerAdapter.OnItemClickListener {
+    private static final String TAG = "MainActivity";
     private RecyclerView recyclerView;
     private File rootFile = Constants.ROOT_DIR;
     private List<FileModel> list = new ArrayList<>();
@@ -315,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             @Override
             public void onBackgroundFinished() {
                 adapter.notifyDataSetChanged();
-                System.out.println("=====================" + (System.currentTimeMillis() - l));
+                Log.d(TAG,""+(System.currentTimeMillis() - l));
             }
         });
     }

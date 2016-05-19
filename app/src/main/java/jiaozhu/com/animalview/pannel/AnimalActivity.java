@@ -313,7 +313,6 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
 
     @Override
     public void onViewTap(View view, float x, float y, BasePagerAdapter adapter) {
-//        System.out.println(x + ":" + y);
         switch (getTouchType(x, y)) {
             case TOUCH_CENTER:
                 changeUi();
