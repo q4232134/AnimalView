@@ -407,8 +407,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
             return;
         }
         if (currentModel != null) {
-            currentModel.setLastPage(mViewPager.getCurrentItem());
-            FileDao.getInstance().update(currentModel);
+            saveLastPage();
         }
         currentModel = commList.get(index);
         Snackbar.make(mViewPager, currentModel.getFile().getName(), Snackbar.LENGTH_SHORT).show();
@@ -495,10 +494,21 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
 
     @Override
     protected void onPause() {
-        currentModel.setLastPage(mViewPager.getCurrentItem());
-        FileDao.getInstance().update(currentModel);
+        saveLastPage();
         Preferences.getInstance().saveHistory(currentModel.getFile());
         super.onPause();
+    }
+
+    /**
+     * 保存最后访问页
+     */
+    private void saveLastPage() {
+        int lastPage = mViewPager.getCurrentItem();
+        //如果为最后一页则保存第一页(从头阅读)
+        if (lastPage == adapter.getCount() - 1)
+            lastPage = 0;
+        currentModel.setLastPage(lastPage);
+        FileDao.getInstance().update(currentModel);
     }
 
 
@@ -623,7 +633,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
             final PhotoView photoView = new PhotoView(container.getContext());
             photoView.setImageBitmap(list.get(position));
             photoView.setOnViewTapListener(this);
-            if(doubleClickAction!=null){
+            if (doubleClickAction != null) {
                 final GestureDetector.OnDoubleTapListener doubleTapListener
                         = new DoubleTapListener((PhotoViewAttacher) photoView.getIPhotoViewImplementation()) {
                     @Override
@@ -633,7 +643,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
                 };
                 photoView.setOnDoubleTapListener(doubleTapListener);
             }
-            if(longClickAction!=null){
+            if (longClickAction != null) {
                 photoView.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {

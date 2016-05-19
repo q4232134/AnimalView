@@ -16,7 +16,7 @@ public abstract class DoubleTapListener extends DefaultOnDoubleTapListener {
     @Override
     public boolean onDoubleTap(MotionEvent ev) {
         onDoubleCLick();
-        return super.onDoubleTap(ev);
+        return false;
     }
 
     public abstract void onDoubleCLick();
