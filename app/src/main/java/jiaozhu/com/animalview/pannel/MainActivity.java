@@ -19,6 +19,8 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,11 +30,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import jcifs.smb.NtlmPasswordAuthentication;
+import jcifs.smb.SmbFile;
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.commonTools.Log;
 import jiaozhu.com.animalview.commonTools.SelectorRecyclerAdapter;
-import jiaozhu.com.animalview.dao.FileDao;
+import jiaozhu.com.animalview.dao.FileModelDao;
 import jiaozhu.com.animalview.model.FileModel;
 import jiaozhu.com.animalview.pannel.Adapter.FileAdapter;
 import jiaozhu.com.animalview.support.Constants;
@@ -77,7 +81,6 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
 
     private void initProgressDialog() {
         dialog = new ProgressDialog(this);
-        dialog.setTitle("正在初始化目录结构");
         dialog.setCancelable(false);
     }
 
@@ -123,6 +126,76 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     }
 
     /**
+     * 显示服务选择对话框
+     */
+    private void showChoiceDialog() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle("选择需要连接的地址");
+        builder.setSingleChoiceItems(ips.toArray(new String[ips.size()]), -1, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                testConnect(ips.get(which), dialog);
+            }
+        });
+        builder.setNeutralButton("刷新列表", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                searchServer(new Runnable() {
+                    @Override
+                    public void run() {
+                        showChoiceDialog();
+                    }
+                });
+            }
+        });
+        builder.create().show();
+    }
+
+
+    /**
+     * 测试连接
+     *
+     * @param ip
+     * @param dialog
+     */
+    public void testConnect(final String ip, final DialogInterface dialog) {
+        BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
+            SmbFile f;
+            boolean flag = false;
+
+            @Override
+            public void runnable() {
+                try {
+                    NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", "guest", "");
+                    f = new SmbFile(getSmbPath(ip), auth);
+                    f.connect();
+                    flag = true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onBackgroundFinished() {
+                if (flag) {
+                    dialog.dismiss();
+                    toSmbActivity(ip);
+                } else {
+                    Toast.makeText(MainActivity.this, "无法连接服务", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void toSmbActivity(String ip) {
+        Intent i = new Intent();
+        i.putExtra(SmbActivity.SERVER_IP, ip);
+        i.setClass(this, SmbActivity.class);
+        startActivity(i);
+    }
+
+
+    /**
      * 删除指定文件
      *
      * @param models
@@ -159,14 +232,14 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             @Override
             public void runnable() {
                 Map<String, FileModel> newMap = Tools.getDirList(rootFile);
-                Map<String, FileModel> oldMap = FileDao.getInstance().getModelsByPaths(newMap.keySet());
+                Map<String, FileModel> oldMap = FileModelDao.getInstance().getModelsByPaths(newMap.keySet());
                 for (Map.Entry<String, FileModel> entry : newMap.entrySet()) {
                     FileModel temp = oldMap.get(entry.getKey());
                     if (temp != null) {
                         entry.getValue().setLastPage(temp.getLastPage());
                     }
                 }
-                FileDao.getInstance().replace(new ArrayList<>(newMap.values()));
+                FileModelDao.getInstance().replace(new ArrayList<>(newMap.values()));
             }
 
             @Override
@@ -182,11 +255,11 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
      * 查询数据库并清除无用数据
      */
     private void deleteUnExistData() {
-        List<FileModel> list = FileDao.getInstance()
+        List<FileModel> list = FileModelDao.getInstance()
                 .getModelByTime(System.currentTimeMillis() - Constants.HISTORY_DURATION);
         for (FileModel model : list) {
             if (!model.getFile().exists()) {
-                FileDao.getInstance().delete(model.getPath());
+                FileModelDao.getInstance().delete(model.getPath());
                 //删除缓存文件
                 model.getCacheFile().delete();
             }
@@ -251,9 +324,29 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             case R.id.action_settings:
                 toSettingActivity();
                 break;
+            case R.id.action_choice:
+                onChoiceClick();
+                break;
             default:
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * 单击选择按钮
+     */
+    private void onChoiceClick() {
+        final Runnable showChoiceRunnable = new Runnable() {
+            @Override
+            public void run() {
+                showChoiceDialog();
+            }
+        };
+        if (ips.isEmpty()) {
+            searchServer(showChoiceRunnable);
+        } else {
+            showChoiceRunnable.run();
+        }
     }
 
     private void toSettingActivity() {
@@ -283,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                     }
                 });
                 if (files != null) {
-                    Map<String, FileModel> models = FileDao.getInstance().getModelsByFiles(Arrays.asList(files));
+                    Map<String, FileModel> models = FileModelDao.getInstance().getModelsByFiles(Arrays.asList(files));
                     for (File temp : files) {
                         FileModel model = models.get(temp.getPath());
                         //数据库不存在则创建model并存入数据库
@@ -291,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                             model = new FileModel();
                             model.setFile(temp);
                             model.getStatus();
-                            FileDao.getInstance().replace(model);
+                            FileModelDao.getInstance().replace(model);
                         }
                         //在历史文件路径中的file全部标示
                         if ((historyFile.getPath() + "/").startsWith(model.getPath() + "/")) {
@@ -317,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             @Override
             public void onBackgroundFinished() {
                 adapter.notifyDataSetChanged();
-                Log.d(TAG,""+(System.currentTimeMillis() - l));
+                Log.d(TAG, "" + (System.currentTimeMillis() - l));
             }
         });
     }
@@ -363,4 +456,84 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             default:
         }
     }
+
+    List<String> ips = new ArrayList<>();//可用服务列表
+    int taskNum = 256;
+
+    /**
+     * 搜寻可用服务器
+     *
+     * @param onFinish
+     */
+    private void searchServer(final Runnable onFinish) {
+        final String ipStr = Tools.getLocalIpAddress(this);
+        if (ipStr != null) {
+            final byte[] ip = Tools.string2Ip(ipStr);
+            if (ip == null) return;
+            taskNum = 256;
+            ips.clear();
+            dialog.setTitle("正在搜索可用服务");
+            dialog.show();
+            for (int i = 0; i < 256; i++) {
+                ip[3] = (byte) i;
+                BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
+                    boolean status;
+                    final byte[] tempIp = ip.clone();
+
+                    @Override
+                    public void runnable() {
+                        //能够ping通并且支持smb的标记状态为true
+                        if (Tools.pingIP(tempIp)) {
+                            try {
+                                SmbFile f = new SmbFile(getSmbPath(Tools.ip2String(tempIp)));
+                                f.setConnectTimeout(1000);
+                                f.connect();
+                                status = true;
+                            } catch (MalformedURLException e) {
+                            } catch (IOException e) {
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onBackgroundFinished() {
+                        --taskNum;
+                        if (status) {
+                            ips.add(Tools.ip2String(tempIp));
+                        }
+                        if (taskNum == 0) {
+                            //忽略本机IP
+                            for (String temp : ips) {
+                                if (temp.equals(ipStr)) {
+                                    ips.remove(temp);
+                                    break;
+                                }
+                            }
+                            Collections.sort(ips, new Comparator<String>() {
+                                @Override
+                                public int compare(String lhs, String rhs) {
+                                    int l = Tools.string2Ip(lhs)[3];
+                                    int r = Tools.string2Ip(rhs)[3];
+                                    return l < r ? -1 : (l == r ? 0 : 1);
+                                }
+                            });
+                            dialog.dismiss();
+                            onFinish.run();
+                        }
+                    }
+                }, false);
+            }
+        }
+    }
+
+    /**
+     * 根据IP获取smb地址
+     *
+     * @param ip
+     * @return
+     */
+    private String getSmbPath(String ip) {
+        return "smb://" + ip + "/";
+    }
+
 }

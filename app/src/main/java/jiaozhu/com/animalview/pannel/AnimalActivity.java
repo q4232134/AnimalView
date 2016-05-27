@@ -29,7 +29,7 @@ import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.commonTools.DoubleTapListener;
 import jiaozhu.com.animalview.commonTools.HackyViewPager;
-import jiaozhu.com.animalview.dao.FileDao;
+import jiaozhu.com.animalview.dao.FileModelDao;
 import jiaozhu.com.animalview.model.FileModel;
 import jiaozhu.com.animalview.pannel.Adapter.BasePagerAdapter;
 import jiaozhu.com.animalview.pannel.Interface.OnViewClickListener;
@@ -507,7 +507,7 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
         if (lastPage == adapter.getCount() - 1)
             lastPage = 0;
         currentModel.setLastPage(lastPage);
-        FileDao.getInstance().update(currentModel);
+        FileModelDao.getInstance().update(currentModel);
     }
 
 

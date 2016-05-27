@@ -13,7 +13,11 @@ import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.provider.MediaStore;
 import android.telephony.TelephonyManager;
 import android.text.Html;
@@ -34,6 +38,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -721,5 +726,112 @@ public class Tools {
         return inSampleSize;
     }
 
+    /**
+     * 检查网络是否可用
+     *
+     * @param context
+     * @return
+     */
+    public static boolean checkEnable(Context context) {
+        NetworkInfo localNetworkInfo = ((ConnectivityManager) context
+                .getSystemService(context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+        if ((localNetworkInfo != null) && (localNetworkInfo.isAvailable()))
+            return true;
+        return false;
+    }
+
+    /**
+     * 将ip的整数形式转换成ip形式
+     *
+     * @param ipInt
+     * @return
+     */
+    public static String int2ip(int ipInt) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(ipInt & 0xFF).append(".");
+        sb.append((ipInt >> 8) & 0xFF).append(".");
+        sb.append((ipInt >> 16) & 0xFF).append(".");
+        sb.append((ipInt >> 24) & 0xFF);
+        return sb.toString();
+    }
+
+    /**
+     * 获取当前ip地址
+     *
+     * @param context
+     * @return
+     */
+    public static String getLocalIpAddress(Context context) {
+        try {
+            WifiManager wifiManager = (WifiManager) context
+                    .getSystemService(Context.WIFI_SERVICE);
+            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            int i = wifiInfo.getIpAddress();
+            return int2ip(i);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    /**
+     * ping IP地址
+     *
+     * @return status
+     */
+    public static boolean pingIP(byte[] ip) {
+        try {
+            InetAddress address = InetAddress.getByAddress(ip);
+            return address.isReachable(1500); // 是否能通信 返回true或false
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
+    /**
+     * ping IP地址
+     *
+     * @return status
+     */
+    public static String getHostName(final byte[] ip) {
+        try {
+            InetAddress address = InetAddress.getByAddress(ip);
+            return address.getHostName();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * ip地址转换层String
+     *
+     * @param ip
+     * @return
+     */
+    public static String ip2String(byte[] ip) {
+        String str = "";
+        for (int i = 0; i < ip.length; i++) {
+            str += (ip[i] & 0xFF) + ".";
+        }
+        return str.substring(0, str.length() - 1);
+    }
+
+    /**
+     * string转换成ip地址
+     *
+     * @param str
+     * @return 失败则返回null
+     */
+    public static byte[] string2Ip(String str) {
+        String[] strs = str.split("\\.");
+        final byte[] ip = new byte[4];
+        if (strs.length != 4) return null;
+        for (int i = 0; i < 4; i++) {
+            ip[i] = (byte) (Integer.parseInt(strs[i]));
+        }
+        return ip;
+    }
 
 }

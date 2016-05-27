@@ -13,9 +13,11 @@
 
     <ImageView
         android:id="@+id/image"
-        android:layout_width="60dp"
+        android:layout_width="wrap_content"
+        android:maxWidth="60dp"
+        android:maxHeight="70dp"
+        android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        android:layout_height="70dp"
         android:layout_toRightOf="@id/selectView" />
 
 
@@ -24,8 +26,8 @@
         android:layout_width="wrap_content"
         android:layout_height="60dp"
         android:layout_centerVertical="true"
-        android:layout_toRightOf="@id/image"
         android:layout_toLeftOf="@+id/point"
+        android:layout_toRightOf="@id/image"
         android:gravity="center_vertical"
         android:paddingBottom="3dip"
         android:paddingLeft="15dp"
@@ -43,7 +45,8 @@
         android:rotation="-30"
         android:text="new"
         android:textColor="@android:color/holo_green_dark"
-        android:textStyle="italic|bold" />
+        android:textStyle="italic|bold"
+        android:visibility="gone" />
 
 
     <View

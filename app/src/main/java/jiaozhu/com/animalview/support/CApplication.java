@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.IOException;
 
 import jiaozhu.com.animalview.dao.DBHelper;
-import jiaozhu.com.animalview.dao.FileDao;
+import jiaozhu.com.animalview.dao.FileModelDao;
 
 /**
  * Created by apple on 15/10/30.
@@ -20,10 +20,12 @@ public class CApplication extends Application {
         super.onCreate();
 
         Preferences.init(this);
-        FileDao.init(dbHelper);
-        FileDao.setDebug(true);
+        FileModelDao.init(dbHelper);
+        FileModelDao.setDebug(true);
 
+        Constants.CACHE_DIR = getCacheDir();
         initPath(Constants.ROOT_DIR, Constants.CACHE_DIR);
+
         if (!Constants.NO_MEDIA.exists()) {
             try {
                 Constants.NO_MEDIA.createNewFile();

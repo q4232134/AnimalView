@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Date;
 
+import jcifs.smb.SmbFile;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.support.Constants;
 import jiaozhu.com.animalview.support.Tools;
@@ -28,6 +29,10 @@ public class FileModel {
     public static final byte STATUS_OPEN = 3;//存在子目录
     public static final byte STATUS_ZIP = 4;//压缩文档
     public static final byte STATUS_OTHER = 5;//未知文档
+    public static final byte STATUS_SMB = 6;//远程目录
+
+    private boolean isSmbFile = false;//是否为远程文件
+    private SmbFile smbFile;//远程文件
 
     @Id
     @Column(name = "path", type = "varchar2")
@@ -46,7 +51,24 @@ public class FileModel {
 
     private boolean isHistory = false;//是否为历史记录
 
+    public boolean isSmbFile() {
+        return isSmbFile;
+    }
+
+    public void setSmbFile(boolean smbFile) {
+        isSmbFile = smbFile;
+    }
+
+    public SmbFile getSmbFile() {
+        return smbFile;
+    }
+
+    public void setSmbFile(SmbFile smbFile) {
+        this.smbFile = smbFile;
+    }
+
     public File getFile() {
+        if (isSmbFile) return null;
         if (file == null)
             file = new File(path);
         return file;
@@ -102,6 +124,7 @@ public class FileModel {
      * @return
      */
     public Bitmap getCacheImage() {
+        if (isSmbFile) return null;
         if (getStatus() != STATUS_SHOW) return null;
         Bitmap bm;
         File file = getCacheFile();
@@ -172,6 +195,7 @@ public class FileModel {
      * @return
      */
     private byte getFileStatus() {
+        if (isSmbFile) return STATUS_SMB;
         if (file.isFile()) {
             String fileName = file.getName().toLowerCase();
             if (fileName.endsWith(".zip") || fileName.endsWith(".rar")) {

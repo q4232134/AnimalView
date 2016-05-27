@@ -10,7 +10,7 @@ import java.io.File;
 public class Constants {
     public static String ROOT_DIR_PATH = Environment.getExternalStorageDirectory().getPath() + File.separator + "AnimalView";
     public static File ROOT_DIR = new File(ROOT_DIR_PATH);
-    public static File CACHE_DIR = new File(ROOT_DIR_PATH + File.separator + ".cache");
+    public static File CACHE_DIR;
     public static File NO_MEDIA = new File(ROOT_DIR_PATH + File.separator + ".nomedia");
     public static File DELETE_LOG = new File(ROOT_DIR_PATH + File.separator + "delete.log");
 

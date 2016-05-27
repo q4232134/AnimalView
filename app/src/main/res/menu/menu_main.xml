@@ -4,6 +4,10 @@
     tools:context=".pannel.MainActivity">
 
     <item
+        android:id="@+id/action_choice"
+        android:title="远程"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_settings"
         android:title="设置"
         app:showAsAction="always" />

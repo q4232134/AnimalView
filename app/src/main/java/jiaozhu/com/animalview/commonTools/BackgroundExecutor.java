@@ -12,16 +12,26 @@ import java.util.concurrent.ThreadFactory;
  * @author huangxizhou
  */
 public class BackgroundExecutor {
-    private static ExecutorService executeService;// 线程池
+    private static ExecutorService singleExecuteService;// 线性线程池
+    private static ExecutorService multiExecuteService;// 同时线程池
     private static BackgroundExecutor backgroundExecutor;
     private static Handler handler = new Handler();
 
     private BackgroundExecutor() {
-        executeService = Executors.newSingleThreadExecutor(new ThreadFactory() {
+        singleExecuteService = Executors.newSingleThreadExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable runnable) {
                 Thread thread = new Thread(runnable);
                 thread.setPriority(5);
+                thread.setDaemon(false);
+                return thread;
+            }
+        });
+        multiExecuteService = Executors.newCachedThreadPool(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setPriority(10);
                 thread.setDaemon(false);
                 return thread;
             }
@@ -41,7 +51,18 @@ public class BackgroundExecutor {
      * @param callback
      */
     public void runInBackground(final Task callback) {
-        executeService.execute(new Runnable() {
+        runInBackground(callback, true);
+    }
+
+
+    /**
+     * 在后台运行线程
+     *
+     * @param callback
+     * @param inSingle 是否运行在同一线程
+     */
+    public void runInBackground(final Task callback, boolean inSingle) {
+        Runnable r = new Runnable() {
             @Override
             public void run() {
                 callback.runnable();
@@ -52,7 +73,12 @@ public class BackgroundExecutor {
                     }
                 });
             }
-        });
+        };
+        if (inSingle) {
+            singleExecuteService.execute(r);
+        } else {
+            multiExecuteService.execute(r);
+        }
     }
 
 
