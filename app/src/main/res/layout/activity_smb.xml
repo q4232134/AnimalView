@@ -12,7 +12,6 @@
         android:fitsSystemWindows="true"
         app:contentScrim="?attr/colorPrimary"
         android:layout_width="match_parent"
-        app:title="sssss"
         android:background="@color/colorPrimary"
         android:layout_height="?attr/actionBarSize"
         app:theme="@style/AppTheme.AppBarOverlay"/>

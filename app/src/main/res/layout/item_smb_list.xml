@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    android:background="?android:attr/selectableItemBackground">
+
+    <View
+        android:id="@+id/selectView"
+        android:layout_width="2dp"
+        android:layout_height="match_parent"
+        android:background="#ff9c01"
+        android:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="wrap_content"
+        android:maxWidth="60dp"
+        android:maxHeight="70dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_toRightOf="@id/selectView" />
+
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/point"
+        android:layout_toRightOf="@id/image"
+        android:gravity="center_vertical"
+        android:paddingBottom="3dip"
+        android:paddingLeft="15dp"
+        android:paddingTop="2dip"
+        android:text="11111"
+
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/newMark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/title"
+        android:layout_marginTop="5dp"
+        android:rotation="-30"
+        android:text="new"
+        android:textColor="@android:color/holo_green_dark"
+        android:textStyle="italic|bold"
+        android:visibility="gone" />
+
+
+    <Button
+        android:id="@+id/btn"
+        android:layout_width="70dp"
+        android:layout_height="36dp"
+        android:text="打开"
+        android:textColor="@android:color/white"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="20dp"
+        android:background="@drawable/bg_view" />
+</RelativeLayout>

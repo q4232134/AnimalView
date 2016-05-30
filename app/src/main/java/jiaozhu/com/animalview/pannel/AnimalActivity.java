@@ -54,7 +54,6 @@ public class AnimalActivity extends AppCompatActivity implements ViewPager.OnPag
     private TextView mPageNum;
     private Button mRotation, mSplit, mDirection;
     public static final String INDEX = "index";
-    public static final String PAGE_NUM = "page-num";
     private FileModel currentModel;
     private HackyViewPager mViewPager;
     private List<File> list = new ArrayList<>();

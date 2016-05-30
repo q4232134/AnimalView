@@ -18,14 +18,16 @@ import java.util.Stack;
 
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
-import jcifs.smb.SmbFilenameFilter;
+import jcifs.smb.SmbFileFilter;
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.commonTools.SelectorRecyclerAdapter;
 import jiaozhu.com.animalview.pannel.Adapter.SmbFileAdapter;
 import jiaozhu.com.animalview.support.Constants;
 
-public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAdapter.OnItemClickListener {
+
+public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAdapter.OnItemClickListener,
+        SmbFileAdapter.OnBtnClickListener {
     public static final String SERVER_IP = "ServerIP";
     private SmbFile rootFile;
     private List<SmbFile> list = new ArrayList<>();
@@ -57,12 +59,14 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
         recyclerView = (RecyclerView) findViewById(R.id.list);
         adapter = new SmbFileAdapter(list, this);
         adapter.setOnItemClickListener(this);
+        adapter.setOnBtnClickListener(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
         fresh();
     }
 
     private void fresh() {
+        setTitle(stack.peek().getName());
         dialog.setTitle("正在获取列表");
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
             SmbFile[] files = {};
@@ -72,12 +76,12 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
             public void runnable() {
                 try {
                     SmbFile file = stack.peek();
-                    files = file.listFiles(new SmbFilenameFilter() {
+                    files = file.listFiles(new SmbFileFilter() {
                         @Override
-                        public boolean accept(SmbFile smbFile, String s) throws SmbException {
-                            if (smbFile.isDirectory()) return true;
+                        public boolean accept(SmbFile smbFile) throws SmbException {
+                            if (smbFile.getName().endsWith("/")) return true;
                             for (String temp : Constants.IMAGE_TYPE) {
-                                if (s.endsWith(temp)) return true;
+                                if (smbFile.getName().endsWith(temp)) return true;
                             }
                             return false;
                         }
@@ -130,18 +134,21 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
     /**
      * 向上一层目录
      */
-    private void upDir() {
+    private boolean upDir() {
         if (stack.size() > 1) {
             stack.pop();
             fresh();
+            return true;
         } else {
-            Toast.makeText(this, "已经到了根目录了哦", Toast.LENGTH_SHORT).show();
+            return false;
         }
     }
 
     @Override
     public void onBackPressed() {
-        upDir();
+        if (!upDir()) {
+            Toast.makeText(this, "已经到了根目录了哦", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -150,10 +157,17 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
         int id = item.getItemId();
         switch (id) {
             case android.R.id.home:
-                finish();
+                if (!upDir()) {
+                    finish();
+                }
                 break;
             default:
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBtnClick(int position, View view) {
+
     }
 }

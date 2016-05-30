@@ -32,6 +32,11 @@
             android:label="@string/title_activity_animal"
             android:theme="@style/FullscreenTheme" />
         <activity
+            android:name=".pannel.SmbAnimalActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_animal"
+            android:theme="@style/FullscreenTheme" />
+        <activity
             android:name=".pannel.SettingsActivity"
             android:label="@string/title_activity_settings" />
         <activity
