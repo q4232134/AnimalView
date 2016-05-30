@@ -37,7 +37,7 @@
         <activity
             android:name=".pannel.SmbActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar.SMB"></activity>
     </application>
 
 </manifest>

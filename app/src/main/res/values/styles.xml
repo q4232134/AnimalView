@@ -15,10 +15,12 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+    <style name="AppTheme.NoActionBar.SMB">
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:homeAsUpIndicator">?android:attr/buttonBarStyle</item>
     </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="FullscreenTheme" parent="AppTheme.NoActionBar">
         <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>

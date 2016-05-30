@@ -10,11 +10,12 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:fitsSystemWindows="true"
+        app:contentScrim="?attr/colorPrimary"
         android:layout_width="match_parent"
+        app:title="sssss"
         android:background="@color/colorPrimary"
         android:layout_height="?attr/actionBarSize"
-        app:layout_collapseMode="pin"
-        app:popupTheme="@style/AppTheme.PopupOverlay" />
+        app:theme="@style/AppTheme.AppBarOverlay"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list"
