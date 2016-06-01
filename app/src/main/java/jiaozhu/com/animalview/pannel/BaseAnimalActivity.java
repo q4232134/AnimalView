@@ -742,7 +742,7 @@ public abstract class BaseAnimalActivity<T> extends AppCompatActivity implements
                     if (showLastPageByChild)
                         contentPagerAdapter.getViewPager().setCurrentItem(contentPagerAdapter.getCount() - 1, false);
                 }
-            });
+            }, false);
             container.addView(viewPager, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             return viewPager;
         }
