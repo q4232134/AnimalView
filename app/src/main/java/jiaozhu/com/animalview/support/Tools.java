@@ -216,6 +216,7 @@ public class Tools {
         try {
             FileInputStream fis = new FileInputStream(path);
             bitmap = BitmapFactory.decodeStream(fis);
+            fis.close();
         } catch (Exception e) {
         }
         return bitmap;
@@ -224,18 +225,22 @@ public class Tools {
     /**
      * 读取远程文件成为bitMap
      *
-     * @param url
+     * @param path
      * @return
      */
     public static Bitmap getBitmapBySmb(String path) {
         Bitmap bitmap = null;
         try {
             SmbFileInputStream fis = new SmbFileInputStream(path);
-            bitmap = BitmapFactory.decodeStream(fis);
+            BufferedInputStream buf = new BufferedInputStream(fis);
+            bitmap = BitmapFactory.decodeStream(buf);
+            fis.close();
+            buf.close();
         } catch (Exception e) {
         }
         return bitmap;
     }
+
 
     /**
      * 读取文件成为bitMap
@@ -248,6 +253,7 @@ public class Tools {
         try {
             FileInputStream fis = new FileInputStream(path);
             bitmap = BitmapFactory.decodeStream(fis, null, options);
+            fis.close();
         } catch (Exception e) {
         }
         return bitmap;
@@ -287,6 +293,7 @@ public class Tools {
             FileInputStream fis = new FileInputStream(path);
             bitmap = BitmapFactory.decodeStream(fis);
             bitmap = rotaingImageView(readPictureDegree(path), bitmap);
+            fis.close();
         } catch (Exception e) {
         }
         return bitmap;
@@ -581,17 +588,6 @@ public class Tools {
 
         }
         return false;
-    }
-
-    /**
-     * 删除漫画目录(生成删除记录)
-     *
-     * @param file
-     * @return
-     */
-    public static boolean deleteAnimal(File file) {
-        writeFile(Constants.DELETE_LOG, ">>:" + file.getName() + "\n");
-        return deleteDir(file);
     }
 
     /**

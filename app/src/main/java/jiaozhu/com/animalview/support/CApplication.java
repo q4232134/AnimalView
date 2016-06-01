@@ -18,7 +18,7 @@ public class CApplication extends Application {
     public void onCreate() {
         //TODO 在此初始化所有单例,注意初始化顺序
         super.onCreate();
-
+        System.setProperty("jcifs.smb.client.dfs.disabled", "true");
         Preferences.init(this);
         FileModelDao.init(dbHelper);
         FileModelDao.setDebug(true);

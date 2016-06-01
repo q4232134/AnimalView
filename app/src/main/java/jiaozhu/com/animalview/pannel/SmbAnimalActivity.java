@@ -1,6 +1,8 @@
 package jiaozhu.com.animalview.pannel;
 
 import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.widget.Toast;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -17,7 +19,6 @@ import jiaozhu.com.animalview.support.Tools;
  * Created by jiaozhu on 16/5/30.
  */
 public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile> {
-    List<SmbFile> list = new ArrayList<>();
     public static SmbFilenameFilter filter = new SmbFilenameFilter() {
         @Override
         public boolean accept(SmbFile smbFile, String s) throws SmbException {
@@ -28,6 +29,12 @@ public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile> {
             return false;
         }
     };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mViewPager.setOffscreenPageLimit(3);
+    }
 
     @Override
     SmbFile getFileByPath(String path) {
@@ -73,6 +80,13 @@ public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile> {
 
     @Override
     SmbFile deleteFile(SmbFile smbFile) {
+        try {
+            smbFile.delete();
+            finish();
+        } catch (SmbException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "删除失败", Toast.LENGTH_SHORT).show();
+        }
         return null;
     }
 

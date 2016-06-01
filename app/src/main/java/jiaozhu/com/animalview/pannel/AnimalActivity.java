@@ -79,6 +79,7 @@ public class AnimalActivity extends BaseAnimalActivity<File> {
     File deleteFile(File file) {
         File temp = getNextFile(file);
         if (temp == null) temp = getPreviousFile(file);
+        Tools.writeFile(Constants.DELETE_LOG, ">>:" + file.getName() + "\n");
         Tools.deleteDir(file);
         return temp;
     }

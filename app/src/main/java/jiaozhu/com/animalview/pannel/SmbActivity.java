@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -67,6 +68,7 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
 
     private void fresh() {
         dialog.setTitle("正在获取列表");
+        dialog.show();
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
             SmbFile[] files = {};
             boolean flag = false;//获取是否成功
@@ -75,6 +77,7 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
             public void runnable() {
                 try {
                     SmbFile file = stack.peek();
+                    file.setConnectTimeout(1000);
                     files = file.listFiles(new SmbFileFilter() {
                         @Override
                         public boolean accept(SmbFile smbFile) throws SmbException {
@@ -162,14 +165,20 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
 
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_smb, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         switch (id) {
             case android.R.id.home:
-                if (!upDir()) {
-                    finish();
-                }
+                upDir();
                 break;
+            case R.id.action_exit:
+                finish();
             default:
         }
         return super.onOptionsItemSelected(item);
