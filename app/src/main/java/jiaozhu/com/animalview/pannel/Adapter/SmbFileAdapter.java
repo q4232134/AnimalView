@@ -52,6 +52,12 @@ public class SmbFileAdapter extends SelectorRecyclerAdapter<SmbFileAdapter.ViewH
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_smb_list, parent, false);
         final ViewHolder vh = new ViewHolder(v);
+        vh.mBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBtnClickListener.onBtnClick(vh.getAdapterPosition(), v);
+            }
+        });
         return vh;
     }
 

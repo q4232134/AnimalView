@@ -104,4 +104,5 @@ abstract public class BasePagerAdapter extends PagerAdapter {
         return super.getItemPosition(object);
     }
 
+
 }

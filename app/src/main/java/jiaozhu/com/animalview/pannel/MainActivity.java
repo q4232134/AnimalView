@@ -443,7 +443,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             case FileModel.STATUS_SHOW:
                 Intent i = new Intent();
                 i.setClass(this, AnimalActivity.class);
-                i.putExtra(AnimalActivity.INDEX, commList.indexOf(model));
+                i.putExtra(AnimalActivity.PARAM_PATH, model.getPath());
                 startActivity(i);
                 break;
             case FileModel.STATUS_OPEN:

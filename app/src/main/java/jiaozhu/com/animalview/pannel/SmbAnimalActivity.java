@@ -1,53 +1,88 @@
 package jiaozhu.com.animalview.pannel;
 
-import android.os.Bundle;
+import android.graphics.Bitmap;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
+import jcifs.smb.SmbFilenameFilter;
+import jiaozhu.com.animalview.support.Constants;
+import jiaozhu.com.animalview.support.Tools;
 
 /**
  * Created by jiaozhu on 16/5/30.
  */
-public class SmbAnimalActivity extends MainActivity {
-    public static String PARAM_URL = "url";
+public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile> {
     List<SmbFile> list = new ArrayList<>();
-    SmbFile currentFile;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public static SmbFilenameFilter filter = new SmbFilenameFilter() {
+        @Override
+        public boolean accept(SmbFile smbFile, String s) throws SmbException {
+            String tempName = s.toLowerCase();
+            for (String type : Constants.IMAGE_TYPE) {
+                if (tempName.endsWith(type)) return true;
+            }
+            return false;
+        }
+    };
 
+    @Override
+    SmbFile getFileByPath(String path) {
+        try {
+            currentFile = new SmbFile(path);
+            return currentFile;
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
-//
-//    /**
-//     * 刷新
-//     *
-//     * @param pageNum 刷新之后显示的页码,-1代表最后一页
-//     */
-//    private void fresh(int pageNum) {
-//        list.clear();
-//        File[] tempList = currentModel.getFile().listFiles(new FilenameFilter() {
-//            @Override
-//            public boolean accept(File dir, String filename) {
-//                String tempName = filename.toLowerCase();
-//                for (String type : Constants.IMAGE_TYPE) {
-//                    if (tempName.endsWith(type)) return true;
-//                }
-//                return false;
-//            }
-//        });
-//        if (tempList != null)
-//            for (File temp : tempList) {
-//                list.add(temp);
-//            }
-//        setTitle(currentModel.getFile().getName());
-//        mSeekBar.setMax(adapter.getCount() - 1);
-//        mSeekBar.setProgress(0);
-//        freshPageNum();
-//        adapter.notifyDataSetChanged();
-//        if (pageNum == LAST_PAGE)
-//            pageNum = adapter.getCount() - 1;
-//        mViewPager.setCurrentItem(pageNum, false);
-//    }
+
+    @Override
+    SmbFile getNextFile(SmbFile smbFile) {
+        return null;
+    }
+
+    @Override
+    SmbFile getPreviousFile(SmbFile smbFile) {
+        return null;
+    }
+
+    @Override
+    List<SmbFile> listFiles(SmbFile smbFile) {
+        List<SmbFile> list = new ArrayList<>();
+        try {
+            list = Arrays.asList(smbFile.listFiles(filter));
+        } catch (SmbException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
+    Bitmap getBitmapByFile(SmbFile smbFile) {
+        return Tools.getBitmapBySmb(smbFile.getPath());
+    }
+
+    @Override
+    String getName(SmbFile smbFile) {
+        return smbFile.getName();
+    }
+
+    @Override
+    SmbFile deleteFile(SmbFile smbFile) {
+        return null;
+    }
+
+    @Override
+    int getLastPage(SmbFile smbFile) {
+        return 0;
+    }
+
+    @Override
+    boolean saveLastPage(SmbFile smbFile, int lastPage) {
+        return false;
+    }
 }

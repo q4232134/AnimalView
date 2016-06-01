@@ -49,6 +49,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import jcifs.smb.SmbFileInputStream;
 import jiaozhu.com.animalview.commonTools.Log;
 import jiaozhu.com.animalview.model.FileModel;
 
@@ -214,6 +215,22 @@ public class Tools {
         Bitmap bitmap = null;
         try {
             FileInputStream fis = new FileInputStream(path);
+            bitmap = BitmapFactory.decodeStream(fis);
+        } catch (Exception e) {
+        }
+        return bitmap;
+    }
+
+    /**
+     * 读取远程文件成为bitMap
+     *
+     * @param url
+     * @return
+     */
+    public static Bitmap getBitmapBySmb(String path) {
+        Bitmap bitmap = null;
+        try {
+            SmbFileInputStream fis = new SmbFileInputStream(path);
             bitmap = BitmapFactory.decodeStream(fis);
         } catch (Exception e) {
         }

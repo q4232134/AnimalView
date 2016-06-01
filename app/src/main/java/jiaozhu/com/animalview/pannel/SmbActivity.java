@@ -1,6 +1,7 @@
 package jiaozhu.com.animalview.pannel;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,7 +24,6 @@ import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.commonTools.SelectorRecyclerAdapter;
 import jiaozhu.com.animalview.pannel.Adapter.SmbFileAdapter;
-import jiaozhu.com.animalview.support.Constants;
 
 
 public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAdapter.OnItemClickListener,
@@ -66,7 +66,6 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
     }
 
     private void fresh() {
-        setTitle(stack.peek().getName());
         dialog.setTitle("正在获取列表");
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
             SmbFile[] files = {};
@@ -80,9 +79,6 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
                         @Override
                         public boolean accept(SmbFile smbFile) throws SmbException {
                             if (smbFile.getName().endsWith("/")) return true;
-                            for (String temp : Constants.IMAGE_TYPE) {
-                                if (smbFile.getName().endsWith(temp)) return true;
-                            }
                             return false;
                         }
                     });
@@ -96,12 +92,19 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
             @Override
             public void onBackgroundFinished() {
                 if (flag) {
-                    list.clear();
-                    list.addAll(Arrays.asList(files));
-                    adapter.notifyDataSetChanged();
+                    //是否还有子目录
+                    if (files.length < 1) {
+                        Toast.makeText(SmbActivity.this, "没有下一级目录了哦", Toast.LENGTH_SHORT).show();
+                        stack.pop();
+                    } else {
+                        setTitle(stack.peek().getName());
+                        list.clear();
+                        list.addAll(Arrays.asList(files));
+                    }
                 } else {
                     Toast.makeText(SmbActivity.this, "获取失败", Toast.LENGTH_SHORT).show();
                 }
+                adapter.notifyDataSetChanged();
                 dialog.dismiss();
             }
         });
@@ -127,8 +130,14 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
 
     @Override
     public void onItemClick(View view, int position) {
-        stack.push(list.get(position));
-        fresh();
+        try {
+            if (list.get(position).isDirectory()) {
+                stack.push(list.get(position));
+                fresh();
+            }
+        } catch (SmbException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -168,6 +177,19 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
 
     @Override
     public void onBtnClick(int position, View view) {
+        SmbFile temp = list.get(position);
+        try {
+            if (temp.listFiles(SmbAnimalActivity.filter).length > 0) {
+                Intent i = new Intent();
+                i.setClass(this, SmbAnimalActivity.class);
+                i.putExtra(SmbAnimalActivity.PARAM_PATH, list.get(position).getPath());
+                startActivity(i);
+            } else {
+                Toast.makeText(this, "没有图片文件哦", Toast.LENGTH_SHORT).show();
+            }
+        } catch (SmbException e) {
+            e.printStackTrace();
+        }
 
     }
 }
