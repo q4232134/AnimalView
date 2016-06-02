@@ -41,7 +41,7 @@ import uk.co.senab.photoview.PhotoViewAttacher;
  * status bar and navigation/system bar) with user interaction.
  */
 @SuppressWarnings("WrongConstant")
-public abstract class BaseAnimalActivity<T> extends AppCompatActivity implements ViewPager.OnPageChangeListener,
+public abstract class BaseAnimalActivity<T,G> extends AppCompatActivity implements ViewPager.OnPageChangeListener,
         OnViewClickListener {
     protected static final int LAST_PAGE = -2;
     protected FrameLayout mLayout;
@@ -52,8 +52,8 @@ public abstract class BaseAnimalActivity<T> extends AppCompatActivity implements
     public static final String PARAM_PATH = "param_path";
     protected T currentFile;
     protected HackyViewPager mViewPager;
-    protected List<T> list = new ArrayList<>();
-    protected ImagePagerAdapter<T> adapter;
+    protected List<G> list = new ArrayList<>();
+    protected ImagePagerAdapter<G> adapter;
 
 
     protected byte splitStatus = Preferences.SPLIT_AUTO;
@@ -126,10 +126,10 @@ public abstract class BaseAnimalActivity<T> extends AppCompatActivity implements
     }
 
     protected void initData() {
-        adapter = new ImagePagerAdapter<T>(list, mViewPager) {
+        adapter = new ImagePagerAdapter<G>(list, mViewPager) {
             @Override
-            Bitmap getBitmap(T t) {
-                return getBitmapByFile(t);
+            Bitmap getBitmap(G g) {
+                return getBitmapByFile(g);
             }
         };
         adapter.setOnViewClickListener(this);
@@ -282,9 +282,9 @@ public abstract class BaseAnimalActivity<T> extends AppCompatActivity implements
      */
     protected void fresh(int pageNum) {
         list.clear();
-        List<T> tempList = listFiles(currentFile);
+        List<G> tempList = listFiles(currentFile);
         if (tempList != null)
-            for (T temp : tempList) {
+            for (G temp : tempList) {
                 list.add(temp);
             }
         setTitle(getName(currentFile));
@@ -660,11 +660,11 @@ public abstract class BaseAnimalActivity<T> extends AppCompatActivity implements
     /**
      * 主要适配器
      */
-    abstract class ImagePagerAdapter<T> extends BasePagerAdapter {
-        List<T> list;
+    abstract class ImagePagerAdapter<G> extends BasePagerAdapter {
+        List<G> list;
         OnViewClickListener onViewClickListener;
 
-        public ImagePagerAdapter(List<T> list, ViewPager viewPager) {
+        public ImagePagerAdapter(List<G> list, ViewPager viewPager) {
             this.list = list;
             setViewPager(viewPager);
         }
@@ -677,7 +677,7 @@ public abstract class BaseAnimalActivity<T> extends AppCompatActivity implements
             this.onViewClickListener = onViewClickListener;
         }
 
-        abstract Bitmap getBitmap(T t);
+        abstract Bitmap getBitmap(G g);
 
         @Override
         public int getCount() {
@@ -778,7 +778,7 @@ public abstract class BaseAnimalActivity<T> extends AppCompatActivity implements
      * @param t
      * @return
      */
-    abstract List<T> listFiles(T t);
+    abstract List<G> listFiles(T t);
 
     /**
      * 根据URL得到Bitmap
@@ -786,7 +786,7 @@ public abstract class BaseAnimalActivity<T> extends AppCompatActivity implements
      * @param t
      * @return
      */
-    abstract Bitmap getBitmapByFile(T t);
+    abstract Bitmap getBitmapByFile(G g);
 
     /**
      * 获取文件名

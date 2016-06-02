@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -56,6 +57,13 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     private List<FileModel> commList;
     private ProgressDialog dialog;
     private Toolbar toolbar;
+
+    private Comparator<FileModel> comparable = new Comparator<FileModel>() {
+        @Override
+        public int compare(FileModel m1, FileModel m2) {
+            return compareInt(m2.getStatus(), m1.getStatus());
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -204,6 +212,90 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         });
     }
 
+    List<String> ips = new ArrayList<>();//可用服务列表
+    int taskNum = 256;
+
+    /**
+     * 搜寻可用服务器
+     *
+     * @param onFinish
+     */
+    private void searchServer(final Runnable onFinish) {
+        final String ipStr = Tools.getLocalIpAddress(this);
+        if (ipStr != null) {
+            final byte[] ip = Tools.string2Ip(ipStr);
+            if (ip == null) return;
+            taskNum = 256;
+            ips.clear();
+            dialog.setTitle("正在搜索可用服务");
+            dialog.show();
+            for (int i = 0; i < 256; i++) {
+                ip[3] = (byte) i;
+                BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
+                    boolean status;
+                    final byte[] tempIp = ip.clone();
+
+                    @Override
+                    public void runnable() {
+                        //能够ping通并且支持smb的标记状态为true
+                        if (Tools.pingIP(tempIp)) {
+                            try {
+                                SmbFile f = new SmbFile(getSmbPath(Tools.ip2String(tempIp)));
+                                f.setConnectTimeout(1000);
+                                f.connect();
+                                status = true;
+                            } catch (SmbAuthException e) {
+                                //用户名密码错误
+                                status = true;
+                            } catch (MalformedURLException e) {
+                                e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onBackgroundFinished() {
+                        --taskNum;
+                        if (status) {
+                            ips.add(Tools.ip2String(tempIp));
+                        }
+                        if (taskNum == 0) {
+                            //忽略本机IP
+                            for (String temp : ips) {
+                                if (temp.equals(ipStr)) {
+                                    ips.remove(temp);
+                                    break;
+                                }
+                            }
+                            Collections.sort(ips, new Comparator<String>() {
+                                @Override
+                                public int compare(String lhs, String rhs) {
+                                    int l = Tools.string2Ip(lhs)[3];
+                                    int r = Tools.string2Ip(rhs)[3];
+                                    return l < r ? -1 : (l == r ? 0 : 1);
+                                }
+                            });
+                            dialog.dismiss();
+                            onFinish.run();
+                        }
+                    }
+                }, false);
+            }
+        }
+    }
+
+    /**
+     * 根据IP获取smb地址
+     *
+     * @param ip
+     * @return
+     */
+    private String getSmbPath(String ip) {
+        return "smb://" + ip + "/";
+    }
+
     private void showAuthDialog(final String ip) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle(ip);
@@ -266,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
             @Override
             public void runnable() {
-                Map<String, FileModel> newMap = Tools.getDirList(rootFile);
+                Map<String, FileModel> newMap = getDirList(rootFile);
                 Map<String, FileModel> oldMap = FileModelDao.getInstance().getModelsByPaths(newMap.keySet());
                 for (Map.Entry<String, FileModel> entry : newMap.entrySet()) {
                     FileModel temp = oldMap.get(entry.getKey());
@@ -390,6 +482,9 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         startActivity(i);
     }
 
+    /**
+     * 刷新
+     */
     void fresh() {
         final long l = System.currentTimeMillis();
         list.clear();
@@ -405,7 +500,11 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 File[] files = file.listFiles(new FileFilter() {
                     @Override
                     public boolean accept(File file) {
-                        if (file.getName().startsWith(".") || file.isFile() || file.isHidden())
+                        //是否为隐藏文件
+                        if (file.getName().startsWith(".") || file.isHidden())
+                            return false;
+                        //是否为压缩文件
+                        if (file.isFile() && !Tools.isZipFile(file))
                             return false;
                         return true;
                     }
@@ -434,12 +533,8 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                         }
                     }
                 }
-                Collections.sort(list, new Comparator<FileModel>() {
-                    @Override
-                    public int compare(FileModel m1, FileModel m2) {
-                        return compareInt(m2.getStatus(), m1.getStatus());
-                    }
-                });
+                Collections.sort(list, comparable);
+                Collections.sort(commList, comparable);
             }
 
             @Override
@@ -475,6 +570,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     public void onItemClick(View view, int position) {
         FileModel model = list.get(position);
         switch (model.getStatus()) {
+            case FileModel.STATUS_ZIP:
             case FileModel.STATUS_SHOW:
                 Intent i = new Intent();
                 i.setClass(this, AnimalActivity.class);
@@ -492,88 +588,49 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         }
     }
 
-    List<String> ips = new ArrayList<>();//可用服务列表
-    int taskNum = 256;
 
     /**
-     * 搜寻可用服务器
+     * 获取目录列表，并完成状态标记
      *
-     * @param onFinish
-     */
-    private void searchServer(final Runnable onFinish) {
-        final String ipStr = Tools.getLocalIpAddress(this);
-        if (ipStr != null) {
-            final byte[] ip = Tools.string2Ip(ipStr);
-            if (ip == null) return;
-            taskNum = 256;
-            ips.clear();
-            dialog.setTitle("正在搜索可用服务");
-            dialog.show();
-            for (int i = 0; i < 256; i++) {
-                ip[3] = (byte) i;
-                BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
-                    boolean status;
-                    final byte[] tempIp = ip.clone();
-
-                    @Override
-                    public void runnable() {
-                        //能够ping通并且支持smb的标记状态为true
-                        if (Tools.pingIP(tempIp)) {
-                            try {
-                                SmbFile f = new SmbFile(getSmbPath(Tools.ip2String(tempIp)));
-                                f.setConnectTimeout(1000);
-                                f.connect();
-                                status = true;
-                            } catch (SmbAuthException e) {
-                                //用户名密码错误
-                                status = true;
-                            } catch (MalformedURLException e) {
-                                e.printStackTrace();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onBackgroundFinished() {
-                        --taskNum;
-                        if (status) {
-                            ips.add(Tools.ip2String(tempIp));
-                        }
-                        if (taskNum == 0) {
-                            //忽略本机IP
-                            for (String temp : ips) {
-                                if (temp.equals(ipStr)) {
-                                    ips.remove(temp);
-                                    break;
-                                }
-                            }
-                            Collections.sort(ips, new Comparator<String>() {
-                                @Override
-                                public int compare(String lhs, String rhs) {
-                                    int l = Tools.string2Ip(lhs)[3];
-                                    int r = Tools.string2Ip(rhs)[3];
-                                    return l < r ? -1 : (l == r ? 0 : 1);
-                                }
-                            });
-                            dialog.dismiss();
-                            onFinish.run();
-                        }
-                    }
-                }, false);
-            }
-        }
-    }
-
-    /**
-     * 根据IP获取smb地址
-     *
-     * @param ip
+     * @param file
      * @return
      */
-    private String getSmbPath(String ip) {
-        return "smb://" + ip + "/";
+    public static Map<String, FileModel> getDirList(File file) {
+        Map<String, FileModel> map = new HashMap<>();
+        //如果为压缩文件
+        if (file.isFile() && Tools.isZipFile(file)) {
+            FileModel model = new FileModel();
+            model.setFile(file);
+            model.setPath(file.getPath());
+            model.setStatus(FileModel.STATUS_ZIP);
+            map.put(file.getPath(), model);
+            return map;
+        }
+        //如果为目录
+        if (file.isDirectory()) {
+            int status = FileModel.STATUS_EMPTY;
+            for (File temp : file.listFiles(Tools.imageFilter)) {
+                if (temp.isDirectory()) {
+                    status = FileModel.STATUS_OPEN;
+                    map.putAll(getDirList(temp));
+                } else {
+                    //是否为压缩文件
+                    if (Tools.isZipFile(temp)) {
+                        status = FileModel.STATUS_OPEN;
+                        map.putAll(getDirList(temp));
+                    }
+                    if (status == FileModel.STATUS_EMPTY)
+                        status = FileModel.STATUS_SHOW;
+                }
+            }
+            FileModel model = new FileModel();
+            model.setFile(file);
+            model.setPath(file.getPath());
+            model.setStatus(status);
+            map.put(file.getPath(), model);
+        }
+        return map;
     }
+
 
 }

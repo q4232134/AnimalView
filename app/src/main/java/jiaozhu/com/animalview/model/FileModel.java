@@ -10,7 +10,11 @@ import com.tgb.lk.ahibernate.annotation.Table;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import jcifs.smb.SmbFile;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
@@ -26,8 +30,8 @@ public class FileModel {
     public static final byte STATUS_NO_CHECK = 0;//未检查目录
     public static final byte STATUS_EMPTY = 1;//空目录
     public static final byte STATUS_SHOW = 2;//可用阅读器打开
-    public static final byte STATUS_OPEN = 3;//存在子目录
-    public static final byte STATUS_ZIP = 4;//压缩文档
+    public static final byte STATUS_ZIP = 3;//压缩文档
+    public static final byte STATUS_OPEN = 4;//存在子目录
     public static final byte STATUS_OTHER = 5;//未知文档
     public static final byte STATUS_SMB = 6;//远程目录
 
@@ -87,6 +91,15 @@ public class FileModel {
     }
 
     /**
+     * 是否能够使用阅读器打开
+     *
+     * @return
+     */
+    public boolean isAnimal() {
+        return getStatus() == STATUS_SHOW || getStatus() == STATUS_ZIP;
+    }
+
+    /**
      * 由model判断图片的加载方式并进行加载
      *
      * @param view
@@ -125,7 +138,7 @@ public class FileModel {
      */
     public Bitmap getCacheImage() {
         if (isSmbFile) return null;
-        if (getStatus() != STATUS_SHOW) return null;
+        if (!isAnimal()) return null;
         Bitmap bm;
         File file = getCacheFile();
         if (file.exists()) {
@@ -138,19 +151,57 @@ public class FileModel {
 
     @Nullable
     private Bitmap createCache() {
-        File[] files = getFile().listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String filename) {
-                for (String temp : Constants.IMAGE_TYPE) {
-                    if (filename.toLowerCase().endsWith(temp)) return true;
+        if (getStatus() == STATUS_ZIP) {
+            try {
+                ZipFile zipFile = new ZipFile(file);
+                Enumeration<ZipEntry> enu = (Enumeration<ZipEntry>) zipFile.entries();
+                ZipEntry entry = null;
+                //最多读取10个文件
+                for (int i = 0; i < 10; i++) {
+                    if (!enu.hasMoreElements()) break;
+                    ZipEntry temp = enu.nextElement();
+                    if (Tools.isImageFile(temp.getName())) {
+                        entry = temp;
+                        break;
+                    }
                 }
-                return false;
+                if (entry != null) {
+                    try {
+                        ZipFile file = new ZipFile(getFile());
+                        Bitmap temp = Tools.getBitmapByZip(file, entry);
+                        Bitmap bm = Tools.resizeImage(temp, Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
+                        Tools.saveBitmap(bm, getCacheFile());
+                        return bm;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
-        if (files == null || files.length < 1) return null;
-        Bitmap bm = Tools.getImageThumbnail(files[0].getPath(), Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
-        Tools.saveBitmap(bm, getCacheFile());
-        return bm;
+        }
+        if (getStatus() == STATUS_SHOW) {
+            File[] files = getFile().listFiles(new FilenameFilter() {
+                boolean returned = false;
+
+                @Override
+                public boolean accept(File dir, String filename) {
+                    //最多只返回一个文件
+                    for (String temp : Constants.IMAGE_TYPE) {
+                        if (!returned && filename.toLowerCase().endsWith(temp)) {
+                            returned = true;
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
+            if (files == null || files.length < 1) return null;
+            Bitmap bm = Tools.getImageThumbnail(files[0].getPath(), Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
+            Tools.saveBitmap(bm, getCacheFile());
+            return bm;
+        }
+        return null;
     }
 
     public void setStatus(int status) {

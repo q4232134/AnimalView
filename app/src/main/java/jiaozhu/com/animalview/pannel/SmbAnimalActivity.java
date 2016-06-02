@@ -18,7 +18,7 @@ import jiaozhu.com.animalview.support.Tools;
 /**
  * Created by jiaozhu on 16/5/30.
  */
-public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile> {
+public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile,SmbFile> {
     private List<SmbFile> list = Preferences.smbList;
     public static SmbFilenameFilter imageFilter = new SmbFilenameFilter() {
         @Override

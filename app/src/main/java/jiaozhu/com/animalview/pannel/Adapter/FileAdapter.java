@@ -55,7 +55,7 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
             holder.mTitle.setText(model.getFile().getName());
         }
         //是否为新漫画
-        if (model.getLastPage() == -1 && model.getStatus() == FileModel.STATUS_SHOW) {
+        if (model.getLastPage() == -1 && model.isAnimal()) {
             holder.mNewMark.setVisibility(View.VISIBLE);
         } else {
             holder.mNewMark.setVisibility(View.GONE);
@@ -69,7 +69,7 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
             holder.mView.setBackground(null);
         }
         //是否为可打开漫画
-        if (model.getStatus() == FileModel.STATUS_SHOW) {
+        if (model.isAnimal()) {
             holder.mPoint.setVisibility(View.VISIBLE);
             model.setImageView(holder.mImage);
         } else {

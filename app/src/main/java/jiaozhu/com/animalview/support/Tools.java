@@ -42,16 +42,13 @@ import java.net.InetAddress;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 import jcifs.smb.SmbFileInputStream;
 import jiaozhu.com.animalview.commonTools.Log;
-import jiaozhu.com.animalview.model.FileModel;
 
 /**
  * Created by Administrator on 2014/6/20.
@@ -239,6 +236,43 @@ public class Tools {
         } catch (Exception e) {
         }
         return bitmap;
+    }
+
+    /**
+     * 读取压缩文件为图片
+     *
+     * @param zip   指定压缩文件
+     * @param entry 压缩文件中的图片
+     * @return
+     */
+    public static Bitmap getBitmapByZip(ZipFile zip, ZipEntry entry) {
+        Bitmap bitmap = null;
+        try {
+            InputStream inputStream = zip.getInputStream(entry);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+            bitmap = BitmapFactory.decodeStream(bufferedInputStream);
+            inputStream.close();
+            bufferedInputStream.close();
+        } catch (Exception e) {
+        }
+        return bitmap;
+    }
+
+    public static Bitmap resizeImage(Bitmap bitmap, int w, int h) {
+        Bitmap BitmapOrg = bitmap;
+        int width = BitmapOrg.getWidth();
+        int height = BitmapOrg.getHeight();
+        int newWidth = w;
+        int newHeight = h;
+
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+
+        Matrix matrix = new Matrix();
+        matrix.postScale(scaleWidth, scaleHeight);
+        Bitmap resizedBitmap = Bitmap.createBitmap(BitmapOrg, 0, 0, width,
+                height, matrix, true);
+        return resizedBitmap;
     }
 
 
@@ -618,37 +652,39 @@ public class Tools {
             for (String temp : Constants.IMAGE_TYPE) {
                 if (file.getName().toLowerCase().endsWith(temp)) return true;
             }
+            for (String temp : Constants.ZIP_TYPE) {
+                if (file.getName().toLowerCase().endsWith(temp)) return true;
+            }
             return false;
         }
     };
 
-
     /**
-     * 获取目录列表，并完成状态标记
+     * 是否为压缩文件
      *
      * @param file
      * @return
      */
-    public static Map<String, FileModel> getDirList(File file) {
-        Map<String, FileModel> map = new HashMap<>();
-        if (file.isDirectory()) {
-            int status = FileModel.STATUS_EMPTY;
-            for (File temp : file.listFiles(imageFilter)) {
-                if (temp.isDirectory()) {
-                    status = FileModel.STATUS_OPEN;
-                    map.putAll(getDirList(temp));
-                } else {
-                    if (status == FileModel.STATUS_EMPTY)
-                        status = FileModel.STATUS_SHOW;
-                }
-            }
-            FileModel model = new FileModel();
-            model.setFile(file);
-            model.setPath(file.getPath());
-            model.setStatus(status);
-            map.put(file.getPath(), model);
+    public static boolean isZipFile(File file) {
+        String name = file.getName().toLowerCase();
+        for (String temp : Constants.ZIP_TYPE) {
+            if (name.endsWith(temp)) return true;
         }
-        return map;
+        return false;
+    }
+
+    /**
+     * 是否为图形文件
+     *
+     * @param name
+     * @return
+     */
+    public static boolean isImageFile(String name) {
+        String tempName = name.toLowerCase();
+        for (String temp : Constants.IMAGE_TYPE) {
+            if (tempName.endsWith(temp)) return true;
+        }
+        return false;
     }
 
     /**
@@ -672,25 +708,22 @@ public class Tools {
         return null;
     }
 
+
     /**
      * 读取zip目录
      *
-     * @param file
+     * @param file 压缩文件
      * @return
      */
     public static List<ZipEntry> readZip(File file) {
         List<ZipEntry> list = new ArrayList<>();
         try {
-            ZipFile zip = new ZipFile(file);
-            ZipEntry element = zip.entries().nextElement();
-            FileInputStream fis = new FileInputStream(file);
-            ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
-            ZipEntry entry;
-            while ((entry = zis.getNextEntry()) != null) {
-                list.add(entry);
+            ZipFile zipFile = new ZipFile(file);
+            Enumeration<ZipEntry> enu = (Enumeration<ZipEntry>) zipFile.entries();
+            while (enu.hasMoreElements()) {
+                list.add(enu.nextElement());
             }
-            zis.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return list;

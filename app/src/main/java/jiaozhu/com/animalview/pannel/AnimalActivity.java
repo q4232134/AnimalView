@@ -4,8 +4,11 @@ import android.graphics.Bitmap;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.Arrays;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import jiaozhu.com.animalview.dao.FileModelDao;
 import jiaozhu.com.animalview.model.FileModel;
@@ -19,7 +22,7 @@ import jiaozhu.com.animalview.support.Tools;
  * status bar and navigation/system bar) with user interaction.
  */
 @SuppressWarnings("WrongConstant")
-public class AnimalActivity extends BaseAnimalActivity<File> {
+public class AnimalActivity extends BaseAnimalActivity<File, AnimalActivity.Entry> {
     List<FileModel> commList = Preferences.list;
 
     @Override
@@ -52,22 +55,44 @@ public class AnimalActivity extends BaseAnimalActivity<File> {
     }
 
     @Override
-    List<File> listFiles(File file) {
-        return Arrays.asList(file.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String filename) {
-                String tempName = filename.toLowerCase();
-                for (String type : Constants.IMAGE_TYPE) {
-                    if (tempName.endsWith(type)) return true;
-                }
-                return false;
+    List<Entry> listFiles(File file) {
+        List<Entry> list = new ArrayList<>();
+        if (Tools.isZipFile(file)) {
+            for (ZipEntry zip : Tools.readZip(file)) {
+                if (Tools.isImageFile(zip.getName()))
+                    list.add(new Entry(zip));
             }
-        }));
+        } else {
+            for (File temp : file.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String filename) {
+                    String tempName = filename.toLowerCase();
+                    for (String type : Constants.IMAGE_TYPE) {
+                        if (tempName.endsWith(type)) return true;
+                    }
+                    return false;
+                }
+            })) {
+                list.add(new Entry(temp));
+            }
+        }
+        return list;
     }
 
     @Override
-    Bitmap getBitmapByFile(File file) {
-        return Tools.getBitmap(file.getPath());
+    Bitmap getBitmapByFile(Entry entry) {
+        if (entry.file != null) {
+            return Tools.getBitmap(entry.file.getPath());
+        }
+        if (entry.zip != null) {
+            try {
+                return Tools.getBitmapByZip(new ZipFile(currentFile), entry.zip);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -112,4 +137,18 @@ public class AnimalActivity extends BaseAnimalActivity<File> {
         }
         return -1;
     }
+
+    public static class Entry {
+        File file;
+        ZipEntry zip;
+
+        Entry(ZipEntry zip) {
+            this.zip = zip;
+        }
+
+        Entry(File file) {
+            this.file = file;
+        }
+    }
+
 }

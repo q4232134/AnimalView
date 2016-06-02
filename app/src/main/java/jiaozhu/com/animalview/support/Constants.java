@@ -70,4 +70,9 @@ public class Constants {
      * 可识别的图片类型
      */
     public static final String[] IMAGE_TYPE = {".jpg", ".png", ".bmp", ".gif"};
+
+    /**
+     * 可识别的压缩文件类型
+     */
+    public static final String[] ZIP_TYPE = {".zip", ".rar"};
 }
