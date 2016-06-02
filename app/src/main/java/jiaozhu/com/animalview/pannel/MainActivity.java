@@ -11,10 +11,12 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.ActionMode;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.File;
@@ -31,6 +33,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import jcifs.smb.NtlmPasswordAuthentication;
+import jcifs.smb.SmbAuthException;
 import jcifs.smb.SmbFile;
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
@@ -134,7 +137,8 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         builder.setSingleChoiceItems(ips.toArray(new String[ips.size()]), -1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                testConnect(ips.get(which), dialog);
+                NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", "guest", "");
+                testConnect(ips.get(which), auth, dialog);
             }
         });
         builder.setNeutralButton("刷新列表", new DialogInterface.OnClickListener() {
@@ -158,33 +162,64 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
      * @param ip
      * @param dialog
      */
-    public void testConnect(final String ip, final DialogInterface dialog) {
+    private void testConnect(final String ip, final NtlmPasswordAuthentication auth, final DialogInterface dialog) {
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
             SmbFile f;
-            boolean flag = false;
+            int flag = -1;//-1 无法连接,0 未知用户,1 连接成功
 
             @Override
             public void runnable() {
                 try {
-                    NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", "guest", "");
                     f = new SmbFile(getSmbPath(ip), auth);
                     f.connect();
-                    flag = true;
-                } catch (Exception e) {
+                    flag = 1;
+                } catch (SmbAuthException e) {
+                    flag = 0;
+                    e.printStackTrace();
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
 
             @Override
             public void onBackgroundFinished() {
-                if (flag) {
-                    dialog.dismiss();
-                    toSmbActivity(ip);
-                } else {
-                    Toast.makeText(MainActivity.this, "无法连接服务", Toast.LENGTH_SHORT).show();
+                switch (flag) {
+                    case -1:
+                        Toast.makeText(MainActivity.this, "无法连接服务", Toast.LENGTH_SHORT).show();
+                        break;
+                    case 0:
+                        Toast.makeText(MainActivity.this, "无效的用户名或密码", Toast.LENGTH_SHORT).show();
+                        showAuthDialog(ip);
+                        break;
+                    case 1:
+                        toSmbActivity(ip);
+                        break;
+                    default:
+                        break;
                 }
+                dialog.dismiss();
             }
         });
+    }
+
+    private void showAuthDialog(final String ip) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle(ip);
+        View view = LayoutInflater.from(this).inflate(R.layout.view_auth_input, null);
+        final EditText mName = (EditText) view.findViewById(R.id.name);
+        final EditText mPw = (EditText) view.findViewById(R.id.password);
+        builder.setView(view);
+        builder.setPositiveButton("连接", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                NtlmPasswordAuthentication auth =
+                        new NtlmPasswordAuthentication("", mName.getText().toString(), mPw.getText().toString());
+                testConnect(ip, auth, dialog);
+            }
+        });
+        builder.create().show();
     }
 
     private void toSmbActivity(String ip) {
@@ -489,8 +524,13 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                                 f.setConnectTimeout(1000);
                                 f.connect();
                                 status = true;
+                            } catch (SmbAuthException e) {
+                                //用户名密码错误
+                                status = true;
                             } catch (MalformedURLException e) {
+                                e.printStackTrace();
                             } catch (IOException e) {
+                                e.printStackTrace();
                             }
                         }
                     }
