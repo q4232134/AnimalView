@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,13 +12,15 @@ import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFilenameFilter;
 import jiaozhu.com.animalview.support.Constants;
+import jiaozhu.com.animalview.support.Preferences;
 import jiaozhu.com.animalview.support.Tools;
 
 /**
  * Created by jiaozhu on 16/5/30.
  */
 public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile> {
-    public static SmbFilenameFilter filter = new SmbFilenameFilter() {
+    private List<SmbFile> list = Preferences.smbList;
+    public static SmbFilenameFilter imageFilter = new SmbFilenameFilter() {
         @Override
         public boolean accept(SmbFile smbFile, String s) throws SmbException {
             String tempName = s.toLowerCase();
@@ -38,22 +39,47 @@ public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile> {
 
     @Override
     SmbFile getFileByPath(String path) {
-        try {
-            currentFile = new SmbFile(path);
-            return currentFile;
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        for (SmbFile temp : list) {
+            if (path.equals(temp.getPath())) {
+                return temp;
+            }
         }
         return null;
     }
 
     @Override
     SmbFile getNextFile(SmbFile smbFile) {
+        int position = list.indexOf(smbFile);
+        for (int i = position + 1; i < list.size(); i++) {
+            SmbFile temp = list.get(i);
+            SmbFile f[] = null;
+            try {
+                f = temp.listFiles(imageFilter);
+            } catch (SmbException e) {
+                e.printStackTrace();
+            }
+            if (f != null && f.length > 0) {
+                return temp;
+            }
+        }
         return null;
     }
 
     @Override
     SmbFile getPreviousFile(SmbFile smbFile) {
+        int position = list.indexOf(smbFile);
+        for (int i = position - 1; i > 0; i--) {
+            SmbFile temp = list.get(i);
+            SmbFile f[] = null;
+            try {
+                f = temp.listFiles(imageFilter);
+            } catch (SmbException e) {
+                e.printStackTrace();
+            }
+            if (f != null && f.length > 0) {
+                return temp;
+            }
+        }
         return null;
     }
 
@@ -61,7 +87,7 @@ public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile> {
     List<SmbFile> listFiles(SmbFile smbFile) {
         List<SmbFile> list = new ArrayList<>();
         try {
-            list = Arrays.asList(smbFile.listFiles(filter));
+            list = Arrays.asList(smbFile.listFiles(imageFilter));
         } catch (SmbException e) {
             e.printStackTrace();
         }
@@ -81,8 +107,10 @@ public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile> {
     @Override
     SmbFile deleteFile(SmbFile smbFile) {
         try {
+            SmbFile temp = getNextFile(smbFile);
+            if (temp == null) temp = getPreviousFile(smbFile);
             smbFile.delete();
-            finish();
+            return temp;
         } catch (SmbException e) {
             e.printStackTrace();
             Toast.makeText(this, "删除失败", Toast.LENGTH_SHORT).show();
@@ -99,4 +127,5 @@ public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile> {
     boolean saveLastPage(SmbFile smbFile, int lastPage) {
         return false;
     }
+
 }

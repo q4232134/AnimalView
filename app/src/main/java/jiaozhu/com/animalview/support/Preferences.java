@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import jcifs.smb.SmbFile;
 import jiaozhu.com.animalview.model.FileModel;
 
 /**
@@ -57,6 +58,7 @@ public class Preferences {
     private static SharedPreferences.Editor editor;
 
     public static List<FileModel> list = new ArrayList<>();//当前文件列表
+    public static List<SmbFile> smbList = new ArrayList<>();//远程当前文件列表
 
     public static void init(Context context) {
         preferences = new Preferences(context);

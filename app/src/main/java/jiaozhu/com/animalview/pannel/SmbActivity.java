@@ -25,6 +25,7 @@ import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.commonTools.SelectorRecyclerAdapter;
 import jiaozhu.com.animalview.pannel.Adapter.SmbFileAdapter;
+import jiaozhu.com.animalview.support.Preferences;
 
 
 public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAdapter.OnItemClickListener,
@@ -63,6 +64,11 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
         adapter.setOnBtnClickListener(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         fresh();
     }
 
@@ -188,8 +194,9 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
     public void onBtnClick(int position, View view) {
         SmbFile temp = list.get(position);
         try {
-            if (temp.listFiles(SmbAnimalActivity.filter).length > 0) {
+            if (temp.listFiles(SmbAnimalActivity.imageFilter).length > 0) {
                 Intent i = new Intent();
+                Preferences.smbList = list;
                 i.setClass(this, SmbAnimalActivity.class);
                 i.putExtra(SmbAnimalActivity.PARAM_PATH, list.get(position).getPath());
                 startActivity(i);
