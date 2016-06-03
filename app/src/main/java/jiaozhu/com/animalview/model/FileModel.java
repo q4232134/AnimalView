@@ -11,8 +11,10 @@ import com.tgb.lk.ahibernate.annotation.Table;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -152,32 +154,26 @@ public class FileModel {
     @Nullable
     private Bitmap createCache() {
         if (getStatus() == STATUS_ZIP) {
-            try {
-                ZipFile zipFile = new ZipFile(file);
-                Enumeration<ZipEntry> enu = (Enumeration<ZipEntry>) zipFile.entries();
-                ZipEntry entry = null;
-                //最多读取10个文件
-                for (int i = 0; i < 10; i++) {
-                    if (!enu.hasMoreElements()) break;
-                    ZipEntry temp = enu.nextElement();
-                    if (Tools.isImageFile(temp.getName())) {
-                        entry = temp;
-                        break;
-                    }
+            List<ZipEntry> list = Tools.readZip(file);
+            ZipEntry entry = Collections.min(list, new Comparator<ZipEntry>() {
+                @Override
+                public int compare(ZipEntry lhs, ZipEntry rhs) {
+                    //降低非图形文件的优先级
+                    if (!Tools.isImageFile(lhs.getName())) return 1;
+                    if (!Tools.isImageFile(rhs.getName())) return -1;
+                    return lhs.getName().compareTo(rhs.getName());
                 }
-                if (entry != null) {
-                    try {
-                        ZipFile file = new ZipFile(getFile());
-                        Bitmap temp = Tools.getBitmapByZip(file, entry);
-                        Bitmap bm = Tools.resizeImage(temp, Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
-                        Tools.saveBitmap(bm, getCacheFile());
-                        return bm;
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            });
+            if (entry!=null) {
+                try {
+                    ZipFile file = new ZipFile(getFile());
+                    Bitmap temp = Tools.getBitmapByZip(file, entry);
+                    Bitmap bm = Tools.resizeImage(temp, Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
+                    Tools.saveBitmap(bm, getCacheFile());
+                    return bm;
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
         if (getStatus() == STATUS_SHOW) {

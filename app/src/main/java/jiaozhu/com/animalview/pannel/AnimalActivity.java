@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -62,6 +64,12 @@ public class AnimalActivity extends BaseAnimalActivity<File, AnimalActivity.Entr
                 if (Tools.isImageFile(zip.getName()))
                     list.add(new Entry(zip));
             }
+            Collections.sort(list, new Comparator<Entry>() {
+                @Override
+                public int compare(Entry lhs, Entry rhs) {
+                    return lhs.zip.getName().compareTo(rhs.zip.getName());
+                }
+            });
         } else {
             for (File temp : file.listFiles(new FilenameFilter() {
                 @Override

@@ -42,6 +42,7 @@ import java.net.InetAddress;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -259,6 +260,7 @@ public class Tools {
     }
 
     public static Bitmap resizeImage(Bitmap bitmap, int w, int h) {
+        if (bitmap == null) return null;
         Bitmap BitmapOrg = bitmap;
         int width = BitmapOrg.getWidth();
         int height = BitmapOrg.getHeight();
@@ -720,9 +722,7 @@ public class Tools {
         try {
             ZipFile zipFile = new ZipFile(file);
             Enumeration<ZipEntry> enu = (Enumeration<ZipEntry>) zipFile.entries();
-            while (enu.hasMoreElements()) {
-                list.add(enu.nextElement());
-            }
+            list = Collections.list(enu);
         } catch (Exception e) {
             e.printStackTrace();
         }
