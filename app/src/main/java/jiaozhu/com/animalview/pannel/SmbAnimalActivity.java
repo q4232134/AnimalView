@@ -18,7 +18,7 @@ import jiaozhu.com.animalview.support.Tools;
 /**
  * Created by jiaozhu on 16/5/30.
  */
-public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile,SmbFile> {
+public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile, SmbFile> {
     private List<SmbFile> list = Preferences.smbList;
     public static SmbFilenameFilter imageFilter = new SmbFilenameFilter() {
         @Override
@@ -35,6 +35,7 @@ public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile,SmbFile> {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mViewPager.setOffscreenPageLimit(3);
+        isMultiAdder = true;//使用多线程加载
     }
 
     @Override

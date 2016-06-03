@@ -2,6 +2,10 @@ package jiaozhu.com.animalview.pannel;
 
 import android.graphics.Bitmap;
 
+import com.github.junrar.Archive;
+import com.github.junrar.exception.RarException;
+import com.github.junrar.rarfile.FileHeader;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -26,6 +30,7 @@ import jiaozhu.com.animalview.support.Tools;
 @SuppressWarnings("WrongConstant")
 public class AnimalActivity extends BaseAnimalActivity<File, AnimalActivity.Entry> {
     List<FileModel> commList = Preferences.list;
+    private Archive archive = null;//header必须和archive一一匹配
 
     @Override
     File getFileByPath(String path) {
@@ -58,31 +63,87 @@ public class AnimalActivity extends BaseAnimalActivity<File, AnimalActivity.Entr
 
     @Override
     List<Entry> listFiles(File file) {
-        List<Entry> list = new ArrayList<>();
         if (Tools.isZipFile(file)) {
-            for (ZipEntry zip : Tools.readZip(file)) {
-                if (Tools.isImageFile(zip.getName()))
-                    list.add(new Entry(zip));
+            if (Tools.getZipType(file.getName()) == Tools.ZIP_TYPE)
+                return listZip(file);
+            if (Tools.getZipType(file.getName()) == Tools.RAR_TYPE)
+                return listRar(file);
+        } else {
+            return listDir(file);
+        }
+        return new ArrayList<>();
+    }
+
+
+    /**
+     * 通过RAR文件获取列表
+     *
+     * @param file
+     * @return
+     */
+    private List<Entry> listRar(File file) {
+        List<Entry> list = new ArrayList<>();
+        try {
+            archive = new Archive(file);
+            for (FileHeader header : archive.getFileHeaders()) {
+                if (Tools.isImageFile(header.getFileNameString()))
+                    list.add(new Entry(header));
             }
             Collections.sort(list, new Comparator<Entry>() {
                 @Override
                 public int compare(Entry lhs, Entry rhs) {
-                    return lhs.zip.getName().compareTo(rhs.zip.getName());
+                    return lhs.rar.getFileNameString().compareTo(rhs.rar.getFileNameString());
                 }
             });
-        } else {
-            for (File temp : file.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String filename) {
-                    String tempName = filename.toLowerCase();
-                    for (String type : Constants.IMAGE_TYPE) {
-                        if (tempName.endsWith(type)) return true;
-                    }
-                    return false;
-                }
-            })) {
-                list.add(new Entry(temp));
+        } catch (RarException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+
+    /**
+     * 通过ZIP文件获取列表
+     *
+     * @param file
+     * @return
+     */
+    private List<Entry> listZip(File file) {
+        List<Entry> list = new ArrayList<>();
+        for (ZipEntry zip : Tools.listZip(file)) {
+            if (Tools.isImageFile(zip.getName()))
+                list.add(new Entry(zip));
+        }
+        Collections.sort(list, new Comparator<Entry>() {
+            @Override
+            public int compare(Entry lhs, Entry rhs) {
+                return lhs.zip.getName().compareTo(rhs.zip.getName());
             }
+        });
+        return list;
+    }
+
+    /**
+     * 通过文件夹获取列表
+     *
+     * @param file
+     * @return
+     */
+    private List<Entry> listDir(File file) {
+        List<Entry> list = new ArrayList<>();
+        for (File temp : file.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                String tempName = filename.toLowerCase();
+                for (String type : Constants.IMAGE_TYPE) {
+                    if (tempName.endsWith(type)) return true;
+                }
+                return false;
+            }
+        })) {
+            list.add(new Entry(temp));
         }
         return list;
     }
@@ -96,6 +157,14 @@ public class AnimalActivity extends BaseAnimalActivity<File, AnimalActivity.Entr
             try {
                 return Tools.getBitmapByZip(new ZipFile(currentFile), entry.zip);
             } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        if (entry.rar != null) {
+            try {
+                return Tools.getBitmapByRar(archive, entry.rar);
+            } catch (Exception e) {
                 e.printStackTrace();
                 return null;
             }
@@ -149,6 +218,7 @@ public class AnimalActivity extends BaseAnimalActivity<File, AnimalActivity.Entr
     public static class Entry {
         File file;
         ZipEntry zip;
+        FileHeader rar;
 
         Entry(ZipEntry zip) {
             this.zip = zip;
@@ -156,6 +226,10 @@ public class AnimalActivity extends BaseAnimalActivity<File, AnimalActivity.Entr
 
         Entry(File file) {
             this.file = file;
+        }
+
+        Entry(FileHeader rar) {
+            this.rar = rar;
         }
     }
 

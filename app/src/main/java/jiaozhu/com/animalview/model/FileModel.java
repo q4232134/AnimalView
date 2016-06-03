@@ -4,6 +4,9 @@ import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
+import com.github.junrar.Archive;
+import com.github.junrar.exception.RarException;
+import com.github.junrar.rarfile.FileHeader;
 import com.tgb.lk.ahibernate.annotation.Column;
 import com.tgb.lk.ahibernate.annotation.Id;
 import com.tgb.lk.ahibernate.annotation.Table;
@@ -153,9 +156,93 @@ public class FileModel {
 
     @Nullable
     private Bitmap createCache() {
-        if (getStatus() == STATUS_ZIP) {
-            List<ZipEntry> list = Tools.readZip(file);
-            ZipEntry entry = Collections.min(list, new Comparator<ZipEntry>() {
+        if (getStatus() == STATUS_ZIP && Tools.getZipType(getFile().getName()) == Tools.ZIP_TYPE) {
+            return createZipCache();
+        }
+        if (getStatus() == STATUS_ZIP && Tools.getZipType(getFile().getName()) == Tools.RAR_TYPE) {
+            return createRarCache();
+        }
+        if (getStatus() == STATUS_SHOW) {
+            return createDirCache();
+        }
+        return null;
+    }
+
+    /**
+     * 创建文件夹预览
+     *
+     * @return
+     */
+    @Nullable
+    private Bitmap createDirCache() {
+        File[] files = getFile().listFiles(new FilenameFilter() {
+            boolean returned = false;
+
+            @Override
+            public boolean accept(File dir, String filename) {
+                //最多只返回一个文件
+                for (String temp : Constants.IMAGE_TYPE) {
+                    if (!returned && filename.toLowerCase().endsWith(temp)) {
+                        returned = true;
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+        if (files == null || files.length < 1) return null;
+        Bitmap bm = Tools.getImageThumbnail(files[0].getPath(), Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
+        Tools.saveBitmap(bm, getCacheFile());
+        return bm;
+    }
+
+    /**
+     * 创建rar文档预览
+     *
+     * @return
+     */
+    @Nullable
+    private Bitmap createRarCache() {
+        try {
+            Archive archive = new Archive(getFile());
+            List<FileHeader> list = Tools.listRar(archive);
+            FileHeader header = null;
+            if (!list.isEmpty()) {
+                header = Collections.min(list, new Comparator<FileHeader>() {
+                    @Override
+                    public int compare(FileHeader lhs, FileHeader rhs) {
+                        //降低非图形文件的优先级
+                        if (!Tools.isImageFile(lhs.getFileNameString())) return 1;
+                        if (!Tools.isImageFile(rhs.getFileNameString())) return -1;
+                        return lhs.getFileNameString().compareTo(rhs.getFileNameString());
+                    }
+                });
+            }
+            if (header != null) {
+                Bitmap temp = Tools.getBitmapByRar(archive, header);
+                Bitmap bm = Tools.resizeImage(temp, Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
+                Tools.saveBitmap(bm, getCacheFile());
+                return bm;
+            }
+        } catch (RarException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 创建zip文档预览
+     *
+     * @return
+     */
+    @Nullable
+    private Bitmap createZipCache() {
+        List<ZipEntry> list = Tools.listZip(file);
+        ZipEntry entry = null;
+        if (!list.isEmpty()) {
+            entry = Collections.min(list, new Comparator<ZipEntry>() {
                 @Override
                 public int compare(ZipEntry lhs, ZipEntry rhs) {
                     //降低非图形文件的优先级
@@ -164,38 +251,17 @@ public class FileModel {
                     return lhs.getName().compareTo(rhs.getName());
                 }
             });
-            if (entry!=null) {
-                try {
-                    ZipFile file = new ZipFile(getFile());
-                    Bitmap temp = Tools.getBitmapByZip(file, entry);
-                    Bitmap bm = Tools.resizeImage(temp, Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
-                    Tools.saveBitmap(bm, getCacheFile());
-                    return bm;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
-        if (getStatus() == STATUS_SHOW) {
-            File[] files = getFile().listFiles(new FilenameFilter() {
-                boolean returned = false;
-
-                @Override
-                public boolean accept(File dir, String filename) {
-                    //最多只返回一个文件
-                    for (String temp : Constants.IMAGE_TYPE) {
-                        if (!returned && filename.toLowerCase().endsWith(temp)) {
-                            returned = true;
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            });
-            if (files == null || files.length < 1) return null;
-            Bitmap bm = Tools.getImageThumbnail(files[0].getPath(), Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
-            Tools.saveBitmap(bm, getCacheFile());
-            return bm;
+        if (entry != null) {
+            try {
+                ZipFile file = new ZipFile(getFile());
+                Bitmap temp = Tools.getBitmapByZip(file, entry);
+                Bitmap bm = Tools.resizeImage(temp, Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
+                Tools.saveBitmap(bm, getCacheFile());
+                return bm;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }

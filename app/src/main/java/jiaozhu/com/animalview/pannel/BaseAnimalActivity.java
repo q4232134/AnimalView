@@ -41,7 +41,7 @@ import uk.co.senab.photoview.PhotoViewAttacher;
  * status bar and navigation/system bar) with user interaction.
  */
 @SuppressWarnings("WrongConstant")
-public abstract class BaseAnimalActivity<T,G> extends AppCompatActivity implements ViewPager.OnPageChangeListener,
+public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity implements ViewPager.OnPageChangeListener,
         OnViewClickListener {
     protected static final int LAST_PAGE = -2;
     protected FrameLayout mLayout;
@@ -54,6 +54,7 @@ public abstract class BaseAnimalActivity<T,G> extends AppCompatActivity implemen
     protected HackyViewPager mViewPager;
     protected List<G> list = new ArrayList<>();
     protected ImagePagerAdapter<G> adapter;
+    protected boolean isMultiAdder = false;//是否使用多线程加载
 
 
     protected byte splitStatus = Preferences.SPLIT_AUTO;
@@ -742,7 +743,7 @@ public abstract class BaseAnimalActivity<T,G> extends AppCompatActivity implemen
                     if (showLastPageByChild)
                         contentPagerAdapter.getViewPager().setCurrentItem(contentPagerAdapter.getCount() - 1, false);
                 }
-            }, false);
+            }, !isMultiAdder);
             container.addView(viewPager, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             return viewPager;
         }

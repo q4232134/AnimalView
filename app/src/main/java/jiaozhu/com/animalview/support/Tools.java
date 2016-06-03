@@ -26,6 +26,9 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.github.junrar.Archive;
+import com.github.junrar.rarfile.FileHeader;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -240,7 +243,7 @@ public class Tools {
     }
 
     /**
-     * 读取压缩文件为图片
+     * 读取ZIP压缩文件为图片
      *
      * @param zip   指定压缩文件
      * @param entry 压缩文件中的图片
@@ -255,6 +258,32 @@ public class Tools {
             inputStream.close();
             bufferedInputStream.close();
         } catch (Exception e) {
+        }
+        return bitmap;
+    }
+
+
+    /**
+     * 读取RAR压缩文件为图片
+     *
+     * @param archive 指定压缩文件
+     * @param header  压缩文件中的图片
+     * @return
+     */
+    public static Bitmap getBitmapByRar(Archive archive, FileHeader header) {
+        System.out.println(archive);
+        Bitmap bitmap = null;
+        System.out.println(header.getFileNameString());
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            archive.extractFile(header, outputStream);
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            bitmap = BitmapFactory.decodeStream(inputStream);
+            System.out.println(bitmap);
+            inputStream.close();
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return bitmap;
     }
@@ -710,14 +739,13 @@ public class Tools {
         return null;
     }
 
-
     /**
      * 读取zip目录
      *
      * @param file 压缩文件
      * @return
      */
-    public static List<ZipEntry> readZip(File file) {
+    public static List<ZipEntry> listZip(File file) {
         List<ZipEntry> list = new ArrayList<>();
         try {
             ZipFile zipFile = new ZipFile(file);
@@ -728,6 +756,34 @@ public class Tools {
         }
         return list;
     }
+
+    /**
+     * 读取rar目录
+     *
+     * @return
+     */
+    public static List<FileHeader> listRar(Archive archive) {
+        List<FileHeader> list = new ArrayList<>();
+        list = archive.getFileHeaders();
+        return list;
+    }
+
+    public static final int OTHER_TYPE = 0;
+    public static final int ZIP_TYPE = 1;
+    public static final int RAR_TYPE = 2;
+
+    /**
+     * 判断压缩文件格式
+     *
+     * @return
+     */
+    public static int getZipType(String fileName) {
+        String name = fileName.toLowerCase();
+        if (name.endsWith(".rar")) return RAR_TYPE;
+        if (name.endsWith(".zip")) return ZIP_TYPE;
+        return OTHER_TYPE;
+    }
+
 
     /**
      * 根据目标大小载入图片
