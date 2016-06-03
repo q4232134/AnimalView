@@ -248,9 +248,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                                 //用户名密码错误
                                 status = true;
                             } catch (MalformedURLException e) {
-                                e.printStackTrace();
                             } catch (IOException e) {
-                                e.printStackTrace();
                             }
                         }
                     }
@@ -487,12 +485,14 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
      */
     void fresh() {
         final long l = System.currentTimeMillis();
-        list.clear();
         final File file = stack.peek();
+        setTitle(file.getName());
         if (!file.exists()) {
             Toast.makeText(this, "目录不存在", Toast.LENGTH_SHORT).show();
         }
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
+            List<FileModel> tempList = new ArrayList<FileModel>();
+
             @Override
             public void runnable() {
                 File historyFile = Preferences.getInstance().getHistoryFile();
@@ -526,7 +526,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                         }
                         //判断是否需要显示在目录与是否能够打开
                         if (model.showInList()) {
-                            list.add(model);
+                            tempList.add(model);
                             if (model.animalAble()) {
                                 commList.add(model);
                             }
@@ -539,6 +539,8 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
 
             @Override
             public void onBackgroundFinished() {
+                list.clear();
+                list.addAll(tempList);
                 adapter.notifyDataSetChanged();
                 Log.d(TAG, "" + (System.currentTimeMillis() - l));
             }

@@ -60,7 +60,7 @@ public class Constants {
     /**
      * 缓存文件高度
      */
-    public static final int CACHE_HEIGHT = 120;
+    public static final int CACHE_HEIGHT = 140;
     /**
      * 缓存文件宽度
      */

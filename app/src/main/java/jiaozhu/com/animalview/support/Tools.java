@@ -271,15 +271,12 @@ public class Tools {
      * @return
      */
     public static Bitmap getBitmapByRar(Archive archive, FileHeader header) {
-        System.out.println(archive);
         Bitmap bitmap = null;
-        System.out.println(header.getFileNameString());
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             archive.extractFile(header, outputStream);
             ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
             bitmap = BitmapFactory.decodeStream(inputStream);
-            System.out.println(bitmap);
             inputStream.close();
             outputStream.close();
         } catch (Exception e) {
