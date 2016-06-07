@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import jcifs.smb.SmbFile;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.support.Constants;
 import jiaozhu.com.animalview.support.Tools;
@@ -38,12 +37,11 @@ public class FileModel {
     public static final byte STATUS_ZIP = 3;//压缩文档
     public static final byte STATUS_OPEN = 4;//存在子目录
     public static final byte STATUS_OTHER = 5;//未知文档
-    public static final byte STATUS_SMB = 6;//远程目录
-
-    private boolean isSmbFile = false;//是否为远程文件
-    private SmbFile smbFile;//远程文件
 
     @Id
+    @Column(name = "name", type = "varchar2")
+    private String name;
+
     @Column(name = "path", type = "varchar2")
     private String path;
 
@@ -60,24 +58,15 @@ public class FileModel {
 
     private boolean isHistory = false;//是否为历史记录
 
-    public boolean isSmbFile() {
-        return isSmbFile;
+    public String getName() {
+        return name;
     }
 
-    public void setSmbFile(boolean smbFile) {
-        isSmbFile = smbFile;
-    }
-
-    public SmbFile getSmbFile() {
-        return smbFile;
-    }
-
-    public void setSmbFile(SmbFile smbFile) {
-        this.smbFile = smbFile;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public File getFile() {
-        if (isSmbFile) return null;
         if (file == null)
             file = new File(path);
         return file;
@@ -86,6 +75,7 @@ public class FileModel {
     public void setFile(File file) {
         this.file = file;
         path = file.getPath();
+        name = file.getName();
     }
 
     public int getStatus() {
@@ -142,7 +132,6 @@ public class FileModel {
      * @return
      */
     public Bitmap getCacheImage() {
-        if (isSmbFile) return null;
         if (!isAnimal()) return null;
         Bitmap bm;
         File file = getCacheFile();
@@ -290,10 +279,6 @@ public class FileModel {
         return path;
     }
 
-    public void setPath(String path) {
-        this.path = path;
-    }
-
     public Date getCreateTime() {
         return createTime;
     }
@@ -308,7 +293,6 @@ public class FileModel {
      * @return
      */
     private byte getFileStatus() {
-        if (isSmbFile) return STATUS_SMB;
         if (file.isFile()) {
             String fileName = file.getName().toLowerCase();
             if (fileName.endsWith(".zip") || fileName.endsWith(".rar")) {

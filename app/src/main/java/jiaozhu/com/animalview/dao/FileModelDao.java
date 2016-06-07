@@ -45,9 +45,9 @@ public class FileModelDao extends BaseDaoImpl<FileModel> {
     public Map<String, FileModel> getModelsByFiles(Collection<File> files) {
         List<String> list = new ArrayList<>();
         for (File temp : files) {
-            list.add(temp.getPath());
+            list.add(temp.getName());
         }
-        return getModelsByPaths(list);
+        return getModelsByNames(list);
     }
 
     /**
@@ -59,29 +59,29 @@ public class FileModelDao extends BaseDaoImpl<FileModel> {
     public Map<String, FileModel> getModelsByModels(Collection<FileModel> models) {
         List<String> list = new ArrayList<>();
         for (FileModel temp : models) {
-            list.add(temp.getPath());
+            list.add(temp.getName());
         }
-        return getModelsByPaths(list);
+        return getModelsByNames(list);
     }
 
     /**
      * 获取路径对应的model(如果存在的话)
      *
-     * @param paths
+     * @param names
      * @return
      */
-    public Map<String, FileModel> getModelsByPaths(Collection<String> paths) {
+    public Map<String, FileModel> getModelsByNames(Collection<String> names) {
         Map<String, FileModel> map = new Hashtable<>();
-        if (paths.isEmpty()) return map;
+        if (names.isEmpty()) return map;
         StringBuffer sb = new StringBuffer();
-        for (String temp : paths) {
+        for (String temp : names) {
             //对单引号进行特殊处理
-            sb.append("path = '").append(temp.replace("'","''")).append("' or ");
+            sb.append("name = '").append(temp.replace("'","''")).append("' or ");
         }
         String temp = sb.substring(0, sb.length() - 3);
         List<FileModel> list = rawQuery("select * from " + FileModel.TABLE_NAME + " where  " + temp + " ",null);
         for (FileModel model : list) {
-            map.put(model.getPath(), model);
+            map.put(model.getName(), model);
         }
         return map;
     }

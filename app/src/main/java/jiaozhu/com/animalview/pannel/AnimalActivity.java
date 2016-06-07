@@ -208,7 +208,7 @@ public class AnimalActivity extends BaseAnimalActivity<File, AnimalActivity.Entr
      */
     private int indexOfList(File file) {
         for (FileModel temp : commList) {
-            if (file.getPath().equals(temp.getPath())) {
+            if (file.getName().equals(temp.getName())) {
                 return commList.indexOf(temp);
             }
         }

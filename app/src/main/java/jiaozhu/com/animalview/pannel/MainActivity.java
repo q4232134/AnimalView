@@ -38,7 +38,6 @@ import jcifs.smb.SmbAuthException;
 import jcifs.smb.SmbFile;
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
-import jiaozhu.com.animalview.commonTools.Log;
 import jiaozhu.com.animalview.commonTools.SelectorRecyclerAdapter;
 import jiaozhu.com.animalview.dao.FileModelDao;
 import jiaozhu.com.animalview.model.FileModel;
@@ -357,7 +356,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             @Override
             public void runnable() {
                 Map<String, FileModel> newMap = getDirList(rootFile);
-                Map<String, FileModel> oldMap = FileModelDao.getInstance().getModelsByPaths(newMap.keySet());
+                Map<String, FileModel> oldMap = FileModelDao.getInstance().getModelsByNames(newMap.keySet());
                 for (Map.Entry<String, FileModel> entry : newMap.entrySet()) {
                     FileModel temp = oldMap.get(entry.getKey());
                     if (temp != null) {
@@ -384,7 +383,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 .getModelByTime(System.currentTimeMillis() - Constants.HISTORY_DURATION);
         for (FileModel model : list) {
             if (!model.getFile().exists()) {
-                FileModelDao.getInstance().delete(model.getPath());
+                FileModelDao.getInstance().delete(model.getName());
                 //删除缓存文件
                 model.getCacheFile().delete();
             }
@@ -484,7 +483,6 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
      * 刷新
      */
     void fresh() {
-        final long l = System.currentTimeMillis();
         final File file = stack.peek();
         setTitle(file.getName());
         if (!file.exists()) {
@@ -512,7 +510,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 if (files != null) {
                     Map<String, FileModel> models = FileModelDao.getInstance().getModelsByFiles(Arrays.asList(files));
                     for (File temp : files) {
-                        FileModel model = models.get(temp.getPath());
+                        FileModel model = models.get(temp.getName());
                         //数据库不存在则创建model并存入数据库
                         if (model == null) {
                             model = new FileModel();
@@ -533,7 +531,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                         }
                     }
                 }
-                Collections.sort(list, comparable);
+                Collections.sort(tempList, comparable);
                 Collections.sort(commList, comparable);
             }
 
@@ -542,7 +540,6 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 list.clear();
                 list.addAll(tempList);
                 adapter.notifyDataSetChanged();
-                Log.d(TAG, "" + (System.currentTimeMillis() - l));
             }
         });
     }
@@ -603,9 +600,8 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         if (file.isFile() && Tools.isZipFile(file)) {
             FileModel model = new FileModel();
             model.setFile(file);
-            model.setPath(file.getPath());
             model.setStatus(FileModel.STATUS_ZIP);
-            map.put(file.getPath(), model);
+            map.put(file.getName(), model);
             return map;
         }
         //如果为目录
@@ -627,7 +623,6 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             }
             FileModel model = new FileModel();
             model.setFile(file);
-            model.setPath(file.getPath());
             model.setStatus(status);
             map.put(file.getPath(), model);
         }
