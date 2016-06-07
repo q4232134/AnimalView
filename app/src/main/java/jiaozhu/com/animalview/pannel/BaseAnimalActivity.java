@@ -11,11 +11,14 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.GestureDetector;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,13 +45,14 @@ import uk.co.senab.photoview.PhotoViewAttacher;
  */
 @SuppressWarnings("WrongConstant")
 public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity implements ViewPager.OnPageChangeListener,
-        OnViewClickListener {
+        OnViewClickListener, View.OnSystemUiVisibilityChangeListener {
     protected static final int LAST_PAGE = -2;
     protected FrameLayout mLayout;
     protected View mToolBar;
     protected SeekBar mSeekBar;
-    protected TextView mPageNum;
+    protected TextView mPageNum, mPopNum;
     protected Button mRotation, mSplit, mDirection;
+    protected PopupWindow popupWindow;
     public static final String PARAM_PATH = "param_path";
     protected T currentFile;
     protected HackyViewPager mViewPager;
@@ -123,7 +127,19 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         mSplit = (Button) findViewById(R.id.split_btn);
         mDirection = (Button) findViewById(R.id.direction_btn);
 
+        mLayout.setOnSystemUiVisibilityChangeListener(this);
+
+        initPopView();
         initData();
+    }
+
+    private void initPopView() {
+        View contentView = LayoutInflater.from(this).inflate(
+                R.layout.view_num, null);
+        mPopNum = (TextView) contentView.findViewById(R.id.text);
+        popupWindow = new PopupWindow(contentView,
+                ViewPager.LayoutParams.WRAP_CONTENT, ViewPager.LayoutParams.WRAP_CONTENT, true);
+        popupWindow.setTouchable(false);
     }
 
     protected void initData() {
@@ -189,6 +205,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
                 if (fromUser) {
                     this.progress = progress;
                     freshPageNum();
+                    popupWindow.showAtLocation(mLayout, Gravity.CENTER, 0, 0);
                     delayedRun(Constants.HIDE_UI_DELAY);
                 }
             }
@@ -205,6 +222,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
                     lastPosition = 0;
                     showLastPageByChild = false;
                     mViewPager.setCurrentItem(progress, false);
+                    popupWindow.dismiss();
                 }
             }
         });
@@ -299,6 +317,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     }
 
     protected void freshPageNum() {
+        mPopNum.setText("" + (mSeekBar.getProgress() + 1));
         mPageNum.setText((mSeekBar.getProgress() + 1) + "\n" + (mSeekBar.getMax() + 1));
     }
 
@@ -597,6 +616,21 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     }
 
     /**
+     * UI可见性改变监听
+     *
+     * @param visibility
+     */
+    @Override
+    public void onSystemUiVisibilityChange(int visibility) {
+        if (visibility == 6) {
+            mLayout.setSystemUiVisibility(SHOW_UI);
+            handler.postDelayed(showToolbar, 0);
+            uiShowed = true;
+            delayedRun(Constants.HIDE_UI_DELAY);
+        }
+    }
+
+    /**
      * 子适配器
      */
     class ContentPagerAdapter extends BasePagerAdapter implements PhotoViewAttacher.OnViewTapListener {
@@ -749,6 +783,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         }
     }
 
+
     /**
      * 根据路径获取对象
      *
@@ -784,7 +819,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     /**
      * 根据URL得到Bitmap
      *
-     * @param t
+     * @param g
      * @return
      */
     abstract Bitmap getBitmapByFile(G g);

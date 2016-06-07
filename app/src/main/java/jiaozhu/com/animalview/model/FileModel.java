@@ -37,6 +37,7 @@ public class FileModel {
     public static final byte STATUS_ZIP = 3;//压缩文档
     public static final byte STATUS_OPEN = 4;//存在子目录
     public static final byte STATUS_OTHER = 5;//未知文档
+    public static final byte STATUS_SMB = 6;//远程目录
 
     @Id
     @Column(name = "name", type = "varchar2")
@@ -122,7 +123,7 @@ public class FileModel {
      * @return
      */
     public File getCacheFile() {
-        String name = Tools.md516(path) + ".cache";
+        String name = Tools.md516(getName()) + ".cache";
         return new File(Constants.CACHE_DIR + File.separator + name);
     }
 

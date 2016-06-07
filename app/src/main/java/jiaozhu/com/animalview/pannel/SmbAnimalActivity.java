@@ -121,11 +121,18 @@ public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile, SmbFile> {
 
     @Override
     int getLastPage(SmbFile smbFile) {
+//        FileModel model = FileModelDao.getInstance().get(smbFile.getName());
+//        if (model != null) return model.getLastPage();
         return 0;
     }
 
     @Override
     boolean saveLastPage(SmbFile smbFile, int lastPage) {
+//        FileModel model = new FileModel();
+//        model.setName(smbFile.getName());
+//        model.setStatus(FileModel.STATUS_SMB);
+//        model.setLastPage(lastPage);
+//        FileModelDao.getInstance().replace(model);
         return false;
     }
 
