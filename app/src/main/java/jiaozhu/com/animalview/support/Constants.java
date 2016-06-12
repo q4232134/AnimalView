@@ -19,12 +19,15 @@ public class Constants {
      */
     public static final float CENTER_WIDTH = 0.4f;
     public static final float CENTER_HEIGHT = 0.4f;
+    /**
+     * 边缘触控宽度
+     */
+    public static final float SLIDE_WIDTH = 100;
 
     /**
      * 历史记录保存长度
      */
-//    public static final long HISTORY_DURATION = 30 * 24 * 60 * 60 * 1000;//历史记录保存一个月
-    public static final long HISTORY_DURATION = 0;
+    public static final long HISTORY_DURATION = 30 * 24 * 60 * 60 * 1000;//历史记录保存一个月
 
     /**
      * 删除消息最多显示列表长度

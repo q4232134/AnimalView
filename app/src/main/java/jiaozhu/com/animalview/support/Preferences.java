@@ -53,6 +53,7 @@ public class Preferences {
 
     public static final String SETTING_LONG_CLICK = "setting-long-click";//长按
     public static final String SETTING_DOUBLE_CLICK = "setting-double-click";//双击动作
+    public static final String SETTING_SLIDE_SWITCH = "setting-slide-switch";//边缘滑动
 
     public static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
@@ -76,6 +77,10 @@ public class Preferences {
         sharedPreferences = context.getSharedPreferences(SHAREDPREFERENCES_NAME,
                 Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
+    }
+
+    public boolean canSlideSwitch() {
+        return sharedPreferences.getBoolean(SETTING_SLIDE_SWITCH, true);
     }
 
     /**

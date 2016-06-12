@@ -14,6 +14,7 @@ import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -28,9 +29,10 @@ import java.util.List;
 
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
-import jiaozhu.com.animalview.commonTools.DoubleTapListener;
 import jiaozhu.com.animalview.commonTools.HackyViewPager;
 import jiaozhu.com.animalview.pannel.Adapter.BasePagerAdapter;
+import jiaozhu.com.animalview.pannel.Interface.DoubleTapListener;
+import jiaozhu.com.animalview.pannel.Interface.OnTouchListener;
 import jiaozhu.com.animalview.pannel.Interface.OnViewClickListener;
 import jiaozhu.com.animalview.support.Constants;
 import jiaozhu.com.animalview.support.Preferences;
@@ -308,7 +310,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
             }
         setTitle(getName(currentFile));
         mSeekBar.setMax(adapter.getCount() - 1);
-        mSeekBar.setProgress(0);
+        mSeekBar.setProgress(pageNum);
         freshPageNum();
         adapter.notifyDataSetChanged();
         if (pageNum == LAST_PAGE)
@@ -661,16 +663,19 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
             final PhotoView photoView = new PhotoView(container.getContext());
             photoView.setImageBitmap(list.get(position));
             photoView.setOnViewTapListener(this);
+
             if (doubleClickAction != null) {
                 final GestureDetector.OnDoubleTapListener doubleTapListener
                         = new DoubleTapListener((PhotoViewAttacher) photoView.getIPhotoViewImplementation()) {
                     @Override
-                    public void onDoubleCLick() {
+                    public boolean onDoubleCLick() {
                         doubleClickAction.run();
+                        return true;
                     }
                 };
                 photoView.setOnDoubleTapListener(doubleTapListener);
             }
+
             if (longClickAction != null) {
                 photoView.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
@@ -679,6 +684,10 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
                         return true;
                     }
                 });
+            }
+            if (Preferences.getInstance().canSlideSwitch()) {
+                View.OnTouchListener touchListener = (View.OnTouchListener) photoView.getIPhotoViewImplementation();
+                photoView.setOnTouchListener(getOnTouchListener(touchListener));
             }
             container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             return photoView;
@@ -689,6 +698,60 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
             if (onViewClickListener != null)
                 onViewClickListener.onViewTap(view, x, y, this);
         }
+    }
+
+    /**
+     * 转换onTouchListener
+     *
+     * @param touchListener
+     * @return
+     */
+    private OnTouchListener getOnTouchListener(View.OnTouchListener touchListener) {
+        return new OnTouchListener(touchListener) {
+            int flag = 0;//0 未测定，-1不启动 ，1启动
+            int ox = 0;
+            int oy = 0;
+
+
+            @Override
+            public boolean onTouchEvent(View v, MotionEvent event) {
+                int add = ((int) event.getY() - oy) / 10;
+                int temp = add + mSeekBar.getProgress() + 1;
+                if (temp < 0) temp = 0;
+                if (temp > mSeekBar.getMax()) temp = mSeekBar.getMax();
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        ox = (int) event.getX();
+                        oy = (int) event.getY();
+                        flag = 0;
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        if (flag == 0 && ox < Constants.SLIDE_WIDTH && event.getX() < Constants.SLIDE_WIDTH
+                                && Math.abs(event.getY() - oy) + Math.abs(event.getX() - ox) > 20) {
+                            if (Math.abs(event.getY() - oy) > Math.abs(event.getX() - ox)) {
+                                flag = 1;
+                                ox = (int) event.getX();
+                                oy = (int) event.getY();
+                                popupWindow.showAtLocation(mLayout, Gravity.CENTER, 0, 0);
+                            } else {
+                                flag = -1;
+                            }
+                        }
+                        if (flag > 0) {
+                            mPopNum.setText("" + (temp + 1));
+                        }
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if (flag > 0) {
+                            fresh(temp - 1);
+                            popupWindow.dismiss();
+                            hideUI();
+                        }
+                        break;
+                }
+                return false;
+            }
+        };
     }
 
 

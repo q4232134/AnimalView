@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.SwitchPreference;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
@@ -28,8 +29,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object value) {
-                    String stringValue = value.toString();
+                    if (preference instanceof SwitchPreference) {
+                        SwitchPreference switchPreference = (SwitchPreference) preference;
+                        switchPreference.setChecked((boolean) value);
+                        return true;
+                    }
 
+                    String stringValue = value.toString();
                     if (preference instanceof ListPreference) {
                         ListPreference listPreference = (ListPreference) preference;
                         int index = listPreference.findIndexOfValue(stringValue);
@@ -43,8 +49,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     private static void bindPreferenceSummaryToValue(Preference preference) {
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                Preferences.sharedPreferences.getString(preference.getKey(), ""));
+        if (preference instanceof SwitchPreference) {
+            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+                    Preferences.sharedPreferences.getBoolean(preference.getKey(), false));
+        } else {
+            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+                    Preferences.sharedPreferences.getString(preference.getKey(), ""));
+        }
     }
 
     @Override
@@ -98,6 +109,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             setHasOptionsMenu(true);
             bindPreferenceSummaryToValue(findPreference(Preferences.SETTING_LONG_CLICK));
             bindPreferenceSummaryToValue(findPreference(Preferences.SETTING_DOUBLE_CLICK));
+            bindPreferenceSummaryToValue(findPreference(Preferences.SETTING_SLIDE_SWITCH));
         }
 
     }

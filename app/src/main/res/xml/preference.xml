@@ -11,5 +11,9 @@
             android:entryValues="@array/actions_value"
             android:key="setting-double-click"
             android:title="双击动作" />
+        <SwitchPreference
+            android:key="setting-slide-switch"
+            android:defaultValue="true"
+            android:title="边缘滑动跳转" />
     </PreferenceCategory>
 </PreferenceScreen>

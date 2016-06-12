@@ -1,4 +1,4 @@
-package jiaozhu.com.animalview.commonTools;
+package jiaozhu.com.animalview.pannel.Interface;
 
 import android.view.MotionEvent;
 
@@ -15,9 +15,8 @@ public abstract class DoubleTapListener extends DefaultOnDoubleTapListener {
 
     @Override
     public boolean onDoubleTap(MotionEvent ev) {
-        onDoubleCLick();
-        return false;
+        return onDoubleCLick();
     }
 
-    public abstract void onDoubleCLick();
+    public abstract boolean onDoubleCLick();
 }
