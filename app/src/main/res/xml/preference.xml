@@ -1,5 +1,4 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
     <PreferenceCategory android:title="点击动作设定">
         <ListPreference
             android:entries="@array/actions"
@@ -13,7 +12,6 @@
             android:title="双击动作" />
         <SwitchPreference
             android:key="setting-slide-switch"
-            android:defaultValue="true"
             android:title="边缘滑动跳转" />
     </PreferenceCategory>
 </PreferenceScreen>

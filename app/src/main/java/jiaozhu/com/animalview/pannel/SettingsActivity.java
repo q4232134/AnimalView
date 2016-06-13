@@ -51,7 +51,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
         if (preference instanceof SwitchPreference) {
             sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                    Preferences.sharedPreferences.getBoolean(preference.getKey(), false));
+                    Preferences.sharedPreferences.getBoolean(preference.getKey(), true));
         } else {
             sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
                     Preferences.sharedPreferences.getString(preference.getKey(), ""));
