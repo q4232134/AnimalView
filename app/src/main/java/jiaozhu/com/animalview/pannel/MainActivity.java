@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -393,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     private void initData() {
         commList = Preferences.list;
         stack.push(rootFile);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        setLayout(Preferences.getInstance().isSingleLayout());
         //androidL以下需要在这里设置
         recyclerView.setNestedScrollingEnabled(false);
         adapter = new FileAdapter(list, this);
@@ -445,6 +446,9 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             case android.R.id.home:
                 upDir();
                 break;
+            case R.id.action_change:
+                changeLayout();
+                break;
             case R.id.action_settings:
                 toSettingActivity();
                 break;
@@ -455,6 +459,27 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         }
         return super.onOptionsItemSelected(item);
     }
+
+    /**
+     * 改变啊当前布局方式
+     */
+    private void changeLayout() {
+        boolean isSingleMode = Preferences.getInstance().isSingleLayout();
+        setLayout(!isSingleMode);
+        Preferences.getInstance().setSingleLayout(!isSingleMode);
+    }
+
+    /**
+     * 设置当前布局方式
+     */
+    private void setLayout(boolean isSingleMode) {
+        if (isSingleMode) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        }
+    }
+
 
     /**
      * 单击选择按钮

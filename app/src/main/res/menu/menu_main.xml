@@ -3,6 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".pannel.MainActivity">
 
+
+    <item
+        android:id="@+id/action_change"
+        android:title="布局"
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_choice"
         android:title="远程"
