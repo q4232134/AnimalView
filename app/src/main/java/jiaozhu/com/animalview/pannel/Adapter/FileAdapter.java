@@ -70,10 +70,8 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
         }
         //是否为可打开漫画
         if (model.isAnimal()) {
-            holder.mPoint.setVisibility(View.VISIBLE);
             model.setImageView(holder.mImage);
         } else {
-            holder.mPoint.setVisibility(View.INVISIBLE);
             holder.mImage.setImageResource(android.R.drawable.sym_def_app_icon);
         }
     }
@@ -85,7 +83,7 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public View mView, mSelectView, mPoint;
+        public View mView, mSelectView;
         public TextView mTitle, mNewMark;
         public ImageView mImage;
 
@@ -94,7 +92,6 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
             mView = v;
             mSelectView = v.findViewById(R.id.selectView);
             mTitle = (TextView) v.findViewById(R.id.title);
-            mPoint = v.findViewById(R.id.point);
             mNewMark = (TextView) v.findViewById(R.id.newMark);
             mImage = (ImageView) v.findViewById(R.id.image);
         }

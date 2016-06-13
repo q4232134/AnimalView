@@ -51,6 +51,7 @@
 
     <View
         android:id="@+id/point"
+        android:visibility="gone"
         android:layout_width="10dp"
         android:layout_height="10dp"
         android:layout_alignParentRight="true"

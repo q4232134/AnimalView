@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     private List<FileModel> commList;
     private ProgressDialog dialog;
     private Toolbar toolbar;
+    private CollapsingToolbarLayout mToolbarLayout;
 
     private Comparator<FileModel> comparable = new Comparator<FileModel>() {
         @Override
@@ -70,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        mToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         recyclerView = (RecyclerView) findViewById(R.id.list);
@@ -654,5 +657,8 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         return map;
     }
 
-
+    @Override
+    public void setTitle(CharSequence title) {
+        mToolbarLayout.setTitle(title);
+    }
 }
