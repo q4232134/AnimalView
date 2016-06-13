@@ -53,7 +53,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     protected View mToolBar;
     protected SeekBar mSeekBar;
     protected TextView mPageNum, mPopNum;
-    protected Button mRotation, mSplit, mDirection;
+    protected Button mRotation, mSplit, mDirection, mNext;
     protected PopupWindow popupWindow;
     public static final String PARAM_PATH = "param_path";
     protected T currentFile;
@@ -93,6 +93,13 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         }
     };
 
+    protected Runnable prevAction = new Runnable() {
+        @Override
+        public void run() {
+            toPrevAnimal();
+        }
+    };
+
     protected Runnable deleteAction = new Runnable() {
         @Override
         public void run() {
@@ -128,6 +135,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         mRotation = (Button) findViewById(R.id.rotation_btn);
         mSplit = (Button) findViewById(R.id.split_btn);
         mDirection = (Button) findViewById(R.id.direction_btn);
+        mNext = (Button) findViewById(R.id.next);
 
         mLayout.setOnSystemUiVisibilityChangeListener(this);
 
@@ -155,6 +163,14 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         mViewPager.setAdapter(adapter);
         mViewPager.addOnPageChangeListener(this);
 
+        mNext.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                prevAction.run();
+                return true;
+            }
+        });
+
         /**
          * 初始化设置
          */
@@ -164,39 +180,8 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         mRotation.setText(getRotationName());
         mSplit.setText(getSplitName());
         mDirection.setText(getDirectName());
-        switch (Preferences.getInstance().getDoubleClickAction()) {
-            case Preferences.ACTION_NONE:
-                doubleClickAction = noneAction;
-                break;
-            case Preferences.ACTION_DELETE:
-                doubleClickAction = deleteAction;
-                break;
-            case Preferences.ACTION_EXIT:
-                doubleClickAction = exitAction;
-                break;
-            case Preferences.ACTION_NEXT:
-                doubleClickAction = nextAction;
-                break;
-            default:
-                doubleClickAction = noneAction;
-        }
-        switch (Preferences.getInstance().getLongClickAction()) {
-            case Preferences.ACTION_NONE:
-                longClickAction = noneAction;
-                break;
-            case Preferences.ACTION_DELETE:
-                longClickAction = deleteAction;
-                break;
-            case Preferences.ACTION_EXIT:
-                longClickAction = exitAction;
-                break;
-            case Preferences.ACTION_NEXT:
-                longClickAction = nextAction;
-                break;
-            default:
-                longClickAction = noneAction;
-        }
-
+        doubleClickAction = getActionByTag(Preferences.getInstance().getDoubleClickAction());
+        longClickAction = getActionByTag(Preferences.getInstance().getLongClickAction());
 
         showUI();
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -229,6 +214,28 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
             }
         });
         setAnimal(getFileByPath(getIntent().getStringExtra(PARAM_PATH)));
+    }
+
+    /**
+     * 根据标签获取相应动作
+     *
+     * @return
+     */
+    private Runnable getActionByTag(String tag) {
+        switch (tag) {
+            case Preferences.ACTION_NONE:
+                return noneAction;
+            case Preferences.ACTION_DELETE:
+                return deleteAction;
+            case Preferences.ACTION_EXIT:
+                return exitAction;
+            case Preferences.ACTION_NEXT:
+                return nextAction;
+            case Preferences.ACTION_PREV:
+                return prevAction;
+            default:
+                return noneAction;
+        }
     }
 
     /**
@@ -538,6 +545,20 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     }
 
     /**
+     * 进入上一篇
+     */
+    public void toPrevAnimal() {
+        showLastPageByChild = false;
+        T temp = getPreviousFile(currentFile);
+        if (temp == null) {
+            Toast.makeText(this, "已经是第一篇了哦", Toast.LENGTH_SHORT).show();
+        } else {
+            setAnimal(temp);
+        }
+        delayedRun(Constants.HIDE_UI_DELAY);
+    }
+
+    /**
      * 获取触摸的方式
      *
      * @param x
@@ -631,6 +652,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
             delayedRun(Constants.HIDE_UI_DELAY);
         }
     }
+
 
     /**
      * 子适配器

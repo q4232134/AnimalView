@@ -624,7 +624,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             FileModel model = new FileModel();
             model.setFile(file);
             model.setStatus(status);
-            map.put(file.getPath(), model);
+            map.put(file.getName(), model);
         }
         return map;
     }

@@ -32,6 +32,7 @@ public class Preferences {
 
     public static final String ACTION_NONE = "none";//无
     public static final String ACTION_NEXT = "next";//下一篇
+    public static final String ACTION_PREV = "prev";//上一篇
     public static final String ACTION_DELETE = "delete";//删除
     public static final String ACTION_EXIT = "exit";//退出
 

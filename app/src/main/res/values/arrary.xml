@@ -2,6 +2,7 @@
 <resources>
     <string-array name="actions">
         <item>无</item>
+        <item>上一篇</item>
         <item>下一篇</item>
         <item>删除</item>
         <item>退出</item>
@@ -9,6 +10,7 @@
 
     <string-array name="actions_value">
         <item>none</item>
+        <item>prev</item>
         <item>next</item>
         <item>delete</item>
         <item>exit</item>
