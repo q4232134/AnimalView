@@ -309,6 +309,9 @@ public class FileModel {
                 if (temp.isDirectory()) {
                     return STATUS_OPEN;
                 }
+                if (isZipType(temp)) {
+                    return STATUS_OPEN;
+                }
                 if (isImageType(temp)) {
                     return STATUS_SHOW;
                 }
@@ -320,6 +323,15 @@ public class FileModel {
     private boolean isImageType(File file) {
         String tempName = file.getName().toLowerCase();
         for (String type : Constants.IMAGE_TYPE) {
+            if (tempName.endsWith(type)) return true;
+        }
+        return false;
+    }
+
+
+    private boolean isZipType(File file) {
+        String tempName = file.getName().toLowerCase();
+        for (String type : Constants.ZIP_TYPE) {
             if (tempName.endsWith(type)) return true;
         }
         return false;
