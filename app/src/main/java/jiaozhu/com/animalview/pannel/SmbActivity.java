@@ -73,7 +73,7 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
     }
 
     private void fresh() {
-        dialog.setTitle("正在获取列表");
+        dialog.setTitle(R.string.msg_listing);
         dialog.show();
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
             SmbFile[] files = {};
@@ -103,7 +103,7 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
                 if (flag) {
                     //是否还有子目录
                     if (files.length < 1) {
-                        Toast.makeText(SmbActivity.this, "没有下一级目录了哦", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SmbActivity.this, R.string.msg_has_not_child_dir, Toast.LENGTH_SHORT).show();
                         stack.pop();
                     } else {
                         setTitle(stack.peek().getName());
@@ -111,7 +111,7 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
                         list.addAll(Arrays.asList(files));
                     }
                 } else {
-                    Toast.makeText(SmbActivity.this, "获取失败", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SmbActivity.this, R.string.msg_get_fail, Toast.LENGTH_SHORT).show();
                 }
                 adapter.notifyDataSetChanged();
                 dialog.dismiss();
@@ -165,7 +165,7 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
     @Override
     public void onBackPressed() {
         if (!upDir()) {
-            Toast.makeText(this, "已经到了根目录了哦", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_is_root_dir, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -201,7 +201,7 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
                 i.putExtra(SmbAnimalActivity.PARAM_PATH, list.get(position).getPath());
                 startActivity(i);
             } else {
-                Toast.makeText(this, "没有图片文件哦", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.msg_has_not_img, Toast.LENGTH_SHORT).show();
             }
         } catch (SmbException e) {
             e.printStackTrace();

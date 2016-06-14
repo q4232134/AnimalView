@@ -67,7 +67,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:onClick="onNextClick"
-                    android:text="下一篇"
+                    android:text="@string/view_next"
                     android:textSize="14sp" />
 
                 <Button
@@ -75,8 +75,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:onClick="onOrientationClick"
-                    android:text="自动" />
+                    android:onClick="onOrientationClick" />
 
                 <Button
                     android:id="@+id/split_btn"
@@ -84,23 +83,21 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:onClick="onSplitClick"
-                    android:singleLine="true"
-                    android:text="自动分页" />
+                    android:singleLine="true" />
 
                 <Button
                     android:id="@+id/direction_btn"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:onClick="onDirectionClick"
-                    android:text="左右" />
+                    android:onClick="onDirectionClick" />
 
                 <Button
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:onClick="onDeleteClick"
-                    android:text="删除" />
+                    android:text="@string/view_delete" />
 
 
             </LinearLayout>

@@ -267,11 +267,11 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     protected String getRotationName() {
         switch (getRequestedOrientation()) {
             case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
-                return "横屏";
+                return getString(R.string.view_landscape);
             case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
-                return "竖屏";
+                return getString(R.string.view_portrait);
             case ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED:
-                return "自动";
+                return getString(R.string.view_auto);
             default:
                 return "";
         }
@@ -290,15 +290,15 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
      */
     protected void showDeleteDialog(final T file) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("删除");
-        builder.setMessage("是否删除此目录:" + getName(file));
-        builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+        builder.setTitle(R.string.msg_delete);
+        builder.setMessage(getString(R.string.msg_delete_make_sure) + getName(file));
+        builder.setPositiveButton(R.string.msg_btn_sure, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 setAnimal(deleteFile(currentFile));
             }
         });
-        builder.setNegativeButton("取消", null);
+        builder.setNegativeButton(R.string.msg_btn_cancel, null);
         builder.create().show();
     }
 
@@ -399,7 +399,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         if (!adapter.toNextPage()) {
             T temp = getNextFile(currentFile);
             if (temp == null) {
-                Toast.makeText(this, "已经是最后一篇了哦", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.msg_is_last_book, Toast.LENGTH_SHORT).show();
             } else {
                 setAnimal(temp);
             }
@@ -414,7 +414,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         if (!adapter.toPreviousPage()) {
             T temp = getPreviousFile(currentFile);
             if (temp == null) {
-                Toast.makeText(this, "已经是第一篇了哦", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.msg_is_first_book, Toast.LENGTH_SHORT).show();
             } else {
                 setAnimal(temp);
             }
@@ -428,7 +428,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
      */
     protected void setAnimal(T t) {
         if (t == null) {
-            Toast.makeText(this, "已经是最后一篇了哦", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_is_last_book, Toast.LENGTH_SHORT).show();
             return;
         }
         if (currentFile != null) {
@@ -500,11 +500,11 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     protected String getSplitName() {
         switch (splitStatus) {
             case Preferences.SPLIT_AUTO:
-                return "自动分页";
+                return getString(R.string.view_split_auto);
             case Preferences.SPLIT_FORCE:
-                return "强制分页";
+                return getString(R.string.view_split_force);
             case Preferences.SPLIT_NONE:
-                return "不分页";
+                return getString(R.string.view_split_none);
             default:
                 return "";
         }
@@ -537,7 +537,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         showLastPageByChild = false;
         T temp = getNextFile(currentFile);
         if (temp == null) {
-            Toast.makeText(this, "已经是最后一篇了哦", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_is_last_book, Toast.LENGTH_SHORT).show();
         } else {
             setAnimal(temp);
         }
@@ -551,7 +551,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         showLastPageByChild = false;
         T temp = getPreviousFile(currentFile);
         if (temp == null) {
-            Toast.makeText(this, "已经是第一篇了哦", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_is_first_book, Toast.LENGTH_SHORT).show();
         } else {
             setAnimal(temp);
         }
@@ -630,9 +630,9 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     public String getDirectName() {
         switch (directionStatus) {
             case Preferences.DIRECTION_LR:
-                return "左→右";
+                return getString(R.string.view_direction_lr);
             case Preferences.DIRECTION_RL:
-                return "右→左";
+                return getString(R.string.view_direction_rl);
             default:
                 return "";
         }

@@ -11,6 +11,7 @@ import java.util.List;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFilenameFilter;
+import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.support.Constants;
 import jiaozhu.com.animalview.support.Preferences;
 import jiaozhu.com.animalview.support.Tools;
@@ -114,7 +115,7 @@ public class SmbAnimalActivity extends BaseAnimalActivity<SmbFile, SmbFile> {
             return temp;
         } catch (SmbException e) {
             e.printStackTrace();
-            Toast.makeText(this, "删除失败", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_delete_fail, Toast.LENGTH_SHORT).show();
         }
         return null;
     }

@@ -27,7 +27,7 @@ public class FileModelDao extends BaseDaoImpl<FileModel> {
 
     public static FileModelDao getInstance() {
         if (dao == null)
-            throw new NoSuchElementException("必须先完成初始化");
+            throw new NoSuchElementException("you must init first.");
         else
             return dao;
     }

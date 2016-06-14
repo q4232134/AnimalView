@@ -6,14 +6,14 @@
 
     <item
         android:id="@+id/action_change"
-        android:title="布局"
+        android:title="@string/menu_layout"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_choice"
-        android:title="远程"
+        android:title="@string/menu_smb"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_settings"
-        android:title="设置"
+        android:title="@string/menu_setting"
         app:showAsAction="always" />
 </menu>

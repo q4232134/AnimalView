@@ -100,9 +100,9 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
 
     private void showInitDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("是否刷新目录状态");
-        builder.setNegativeButton("取消", null);
-        builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+        builder.setTitle(R.string.msg_fresh_status_make_sure);
+        builder.setNegativeButton(R.string.msg_btn_cancel, null);
+        builder.setPositiveButton(R.string.msg_btn_sure, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 initFileStatus();
@@ -127,10 +127,10 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         if (list.size() > Constants.DELETE_MESSAGE_LENGTH) {
             sb.append("...");
         }
-        builder.setTitle("确认删除以下目录:");
+        builder.setTitle(R.string.msg_deletes_make_sure);
         builder.setMessage(sb);
-        builder.setNegativeButton("取消", null);
-        builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.msg_btn_cancel, null);
+        builder.setPositiveButton(R.string.msg_btn_sure, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 deleteSelectFile(list);
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
      */
     private void showChoiceDialog() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("选择需要连接的地址");
+        builder.setTitle(R.string.msg_smb_choice);
         builder.setSingleChoiceItems(ips.toArray(new String[ips.size()]), -1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 testConnect(ips.get(which), auth, dialog);
             }
         });
-        builder.setNeutralButton("刷新列表", new DialogInterface.OnClickListener() {
+        builder.setNeutralButton(R.string.msg_fresh_list, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 searchServer(new Runnable() {
@@ -198,10 +198,10 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             public void onBackgroundFinished() {
                 switch (flag) {
                     case -1:
-                        Toast.makeText(MainActivity.this, "无法连接服务", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, R.string.msg_can_not_connect, Toast.LENGTH_SHORT).show();
                         break;
                     case 0:
-                        Toast.makeText(MainActivity.this, "无效的用户名或密码", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, R.string.msg_useless_name_or_password, Toast.LENGTH_SHORT).show();
                         showAuthDialog(ip);
                         break;
                     case 1:
@@ -230,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             if (ip == null) return;
             taskNum = 256;
             ips.clear();
-            dialog.setTitle("正在搜索可用服务");
+            dialog.setTitle(R.string.msg_finding_service);
             dialog.show();
             for (int i = 0; i < 256; i++) {
                 ip[3] = (byte) i;
@@ -329,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
      * @param models
      */
     private void deleteSelectFile(final Collection<FileModel> models) {
-        dialog.setTitle("正在删除指定目录");
+        dialog.setTitle(R.string.msg_deleting);
         dialog.show();
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
             @Override
@@ -341,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
 
             @Override
             public void onBackgroundFinished() {
-                Toast.makeText(MainActivity.this, "删除完成", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.msg_delete_complete, Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
                 fresh();
             }
@@ -354,7 +354,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
      * 重新计算目录状态，保留之前历史记录
      */
     private void initFileStatus() {
-        dialog.setTitle("正在初始化目录结构");
+        dialog.setTitle(R.string.msg_freshing_status);
         dialog.show();
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
             @Override
@@ -372,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
 
             @Override
             public void onBackgroundFinished() {
-                Toast.makeText(MainActivity.this, "数据初始化成功", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.msg_freshing_complete, Toast.LENGTH_SHORT).show();
                 fresh();
                 dialog.dismiss();
             }
@@ -514,7 +514,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         final File file = stack.peek();
         setTitle(file.getName());
         if (!file.exists()) {
-            Toast.makeText(this, "目录不存在", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_can_not_find_dir, Toast.LENGTH_SHORT).show();
         }
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
             List<FileModel> tempList = new ArrayList<FileModel>();
@@ -589,7 +589,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             stack.pop();
             fresh();
         } else {
-            Toast.makeText(this, "已经到了根目录了哦", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_is_root_dir, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -609,7 +609,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 fresh();
                 break;
             case FileModel.STATUS_EMPTY:
-                Toast.makeText(this, "这是个空目录哟", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.msg_is_empty_dir, Toast.LENGTH_SHORT).show();
                 break;
             default:
         }

@@ -1,10 +1,55 @@
 <resources>
-    <string name="app_name">AnimalView</string>
+    <string name="app_name">漫画阅读器</string>
     <string name="action_settings">Settings</string>
 
-    <string name="title_activity_animal">AnimalActivity</string>
+    <string name="title_activity_animal">漫画阅读器</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_settings">Settings</string>
 
+    <string name="menu_layout">布局</string>
+    <string name="menu_smb">远程</string>
+    <string name="menu_setting">设置</string>
+    <string name="menu_cancel">取消</string>
+    <string name="menu_delete">删除</string>
+    <string name="menu_exit">退出</string>
+
+
+    <string name="view_next">下一篇</string>
+    <string name="view_delete">删除</string>
+    <string name="view_landscape">横屏</string>
+    <string name="view_portrait">竖屏</string>
+    <string name="view_auto">自动</string>
+    <string name="view_split_auto">自动分页</string>
+    <string name="view_split_force">强制分页</string>
+    <string name="view_split_none">不分页</string>
+    <string name="view_direction_lr">左→右</string>
+    <string name="view_direction_rl">右→左</string>
+
+
+    <string name="msg_delete">删除</string>
+    <string name="msg_delete_make_sure">是否删除此目录</string>
+    <string name="msg_btn_sure">确认</string>
+    <string name="msg_btn_cancel">取消</string>
+    <string name="msg_is_first_book">已经是第一篇了哦</string>
+    <string name="msg_is_last_book">已经是最后一篇了哦</string>
+    <string name="msg_fresh_status_make_sure">是否刷新目录状态</string>
+    <string name="msg_freshing_status">正在初始化目录结构</string>
+    <string name="msg_freshing_complete">数据初始化成功</string>
+    <string name="msg_deletes_make_sure">确认删除以下目录:</string>
+    <string name="msg_deleting">正在删除指定目录</string>
+    <string name="msg_delete_complete">删除完成</string>
+    <string name="msg_smb_choice">选择需要连接的地址</string>
+    <string name="msg_fresh_list">刷新列表</string>
+    <string name="msg_can_not_connect">无法连接服务</string>
+    <string name="msg_useless_name_or_password">无效的用户名或密码</string>
+    <string name="msg_finding_service">正在搜索可用服务</string>
+    <string name="msg_can_not_find_dir">目录不存在</string>
+    <string name="msg_is_root_dir">已经到了根目录了哦</string>
+    <string name="msg_is_empty_dir">这是个空目录哟</string>
+    <string name="msg_listing">正在获取列表</string>
+    <string name="msg_has_not_child_dir">没有下一级目录了哦</string>
+    <string name="msg_get_fail">获取失败</string>
+    <string name="msg_has_not_img">没有图片文件哦</string>
+    <string name="msg_delete_fail">删除失败</string>
 </resources>

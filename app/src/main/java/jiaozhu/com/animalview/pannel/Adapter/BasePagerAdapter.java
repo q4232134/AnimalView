@@ -40,7 +40,7 @@ abstract public class BasePagerAdapter extends PagerAdapter {
     public boolean toNextPage() {
         int targetItem = mViewPager.getCurrentItem() + 1;
         if (mViewPager == null) {
-            Log.e(TAG, "没有设定对应的ViewPager");
+            Log.e(TAG, "can't find suitable ViewPager");
             return false;
         }
         if (targetItem > getCount() - 1) {
@@ -62,7 +62,7 @@ abstract public class BasePagerAdapter extends PagerAdapter {
     public boolean toPreviousPage() {
         int targetItem = mViewPager.getCurrentItem() - 1;
         if (mViewPager == null) {
-            Log.e(TAG, "没有设定对应的ViewPager");
+            Log.e(TAG, "can't find suitable ViewPager");
             return false;
         }
         if (targetItem < 0) {
