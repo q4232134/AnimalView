@@ -52,4 +52,10 @@
     <string name="msg_get_fail">获取失败</string>
     <string name="msg_has_not_img">没有图片文件哦</string>
     <string name="msg_delete_fail">删除失败</string>
+
+    <string name="action_action">动作设定</string>
+    <string name="action_action_title">点击动作设定</string>
+    <string name="action_long_press">长按动作</string>
+    <string name="action_double_press">双击动作</string>
+    <string name="action_slide_move">边缘滑动跳转</string>
 </resources>

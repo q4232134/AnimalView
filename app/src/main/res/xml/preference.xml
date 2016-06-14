@@ -1,17 +1,17 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="点击动作设定">
+    <PreferenceCategory android:title="@string/action_action_title">
         <ListPreference
             android:entries="@array/actions"
             android:entryValues="@array/actions_value"
             android:key="setting-long-click"
-            android:title="长按动作" />
+            android:title="@string/action_long_press" />
         <ListPreference
             android:entries="@array/actions"
             android:entryValues="@array/actions_value"
             android:key="setting-double-click"
-            android:title="双击动作" />
+            android:title="@string/action_double_press" />
         <SwitchPreference
             android:key="setting-slide-switch"
-            android:title="边缘滑动跳转" />
+            android:title="@string/action_slide_move" />
     </PreferenceCategory>
 </PreferenceScreen>
