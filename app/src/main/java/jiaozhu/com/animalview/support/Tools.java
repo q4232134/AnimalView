@@ -1,10 +1,7 @@
 package jiaozhu.com.animalview.support;
 
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -19,11 +16,6 @@ import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.provider.MediaStore;
-import android.telephony.TelephonyManager;
-import android.text.Html;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.github.junrar.Archive;
@@ -130,56 +122,6 @@ public class Tools {
             }
         }
         return true;
-    }
-
-    /**
-     * 判断是否为平板设备
-     *
-     * @return
-     */
-    public static boolean isTabletDevice(Context context) {
-        TelephonyManager telephony = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        int type = telephony.getPhoneType();
-        return type == TelephonyManager.PHONE_TYPE_NONE;
-    }
-
-    /**
-     * 设置除了标题之外的字体大小
-     *
-     * @param view  父view
-     * @param title 标题View
-     * @param size  需要变更的大小
-     */
-    public static void setAllTextSize(View view, TextView title, int size) {
-        if (view instanceof ViewGroup) {
-            ViewGroup vp = (ViewGroup) view;
-            for (int i = 0; i < vp.getChildCount(); i++) {
-                View viewChild = vp.getChildAt(i);
-                if (viewChild instanceof ViewGroup) {
-                    setAllTextSize(viewChild, title, size);
-                }
-                if (viewChild instanceof TextView && title != viewChild) {
-                    ((TextView) viewChild).setTextSize(size);
-                }
-            }
-        }
-    }
-
-
-    private static void showDialog(Context context, final EditText view, final String... items) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(
-                context);
-        builder.setTitle(Html.fromHtml("请选择数据"));
-        builder.setSingleChoiceItems(items, -1, new Dialog.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                view.setText((items[which].split("-", 2))[1]);
-                dialog.dismiss();
-            }
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
     }
 
     /**
@@ -760,8 +702,7 @@ public class Tools {
      * @return
      */
     public static List<FileHeader> listRar(Archive archive) {
-        List<FileHeader> list = new ArrayList<>();
-        list = archive.getFileHeaders();
+        List<FileHeader> list = archive.getFileHeaders();
         return list;
     }
 

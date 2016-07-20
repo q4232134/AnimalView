@@ -5,6 +5,7 @@ import android.app.Application;
 import java.io.File;
 import java.io.IOException;
 
+import jiaozhu.com.animalview.commonTools.CrashHandler;
 import jiaozhu.com.animalview.dao.DBHelper;
 import jiaozhu.com.animalview.dao.FileModelDao;
 
@@ -22,6 +23,7 @@ public class CApplication extends Application {
         Preferences.init(this);
         FileModelDao.init(dbHelper);
         FileModelDao.setDebug(true);
+        CrashHandler.init(this, Constants.ROOT_DIR_PATH + File.separator + "crash.log");
 
         Constants.CACHE_DIR = getCacheDir();
         initPath(Constants.ROOT_DIR, Constants.CACHE_DIR);
