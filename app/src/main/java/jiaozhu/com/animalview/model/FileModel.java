@@ -1,6 +1,7 @@
 package jiaozhu.com.animalview.model;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
@@ -210,7 +211,7 @@ public class FileModel {
             }
             if (header != null) {
                 Bitmap temp = Tools.getBitmapByRar(archive, header);
-                Bitmap bm = Tools.resizeImage(temp, Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
+                Bitmap bm = resizeBitmap(temp);
                 Tools.saveBitmap(bm, getCacheFile());
                 return bm;
             }
@@ -220,6 +221,31 @@ public class FileModel {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * 压缩图片
+     *
+     * @param bitmap
+     * @return
+     */
+    private Bitmap resizeBitmap(Bitmap bitmap) {
+        if (bitmap == null) return null;
+        float width = bitmap.getWidth();
+        float height = bitmap.getHeight();
+        float newWidth = Constants.CACHE_WIDTH;
+        float newHeight = Constants.CACHE_HEIGHT;
+
+        float scaleWidth = newWidth / width;
+        float scaleHeight = newHeight / height;
+        float scale = Math.max(scaleHeight, scaleWidth);
+
+        Matrix matrix = new Matrix();
+        matrix.postScale(scale, scale);
+        Bitmap resizedBitmap = Bitmap.createBitmap(bitmap,
+                0, (int) ((height - newHeight / scale) / 2),
+                (int) (newWidth / scale), (int) (newHeight / scale), matrix, true);
+        return resizedBitmap;
     }
 
     /**
@@ -246,7 +272,7 @@ public class FileModel {
             try {
                 ZipFile file = new ZipFile(getFile());
                 Bitmap temp = Tools.getBitmapByZip(file, entry);
-                Bitmap bm = Tools.resizeImage(temp, Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
+                Bitmap bm = resizeBitmap(temp);
                 Tools.saveBitmap(bm, getCacheFile());
                 return bm;
             } catch (IOException e) {

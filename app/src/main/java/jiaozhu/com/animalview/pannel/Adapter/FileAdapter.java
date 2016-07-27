@@ -72,7 +72,7 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
         if (model.isAnimal()) {
             model.setImageView(holder.mImage);
         } else {
-            holder.mImage.setImageResource(android.R.drawable.sym_def_app_icon);
+            holder.mImage.setImageResource(R.drawable.ic_folder);
         }
     }
 

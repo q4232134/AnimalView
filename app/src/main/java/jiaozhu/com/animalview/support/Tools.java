@@ -227,21 +227,30 @@ public class Tools {
         return bitmap;
     }
 
+    /**
+     * 等比缩小并截取中间部分
+     *
+     * @param bitmap 原图
+     * @param w      期望宽度
+     * @param h      期望高度
+     * @return
+     */
     public static Bitmap resizeImage(Bitmap bitmap, int w, int h) {
         if (bitmap == null) return null;
-        Bitmap BitmapOrg = bitmap;
-        int width = BitmapOrg.getWidth();
-        int height = BitmapOrg.getHeight();
-        int newWidth = w;
-        int newHeight = h;
+        float width = bitmap.getWidth();
+        float height = bitmap.getHeight();
+        float newWidth = w;
+        float newHeight = h;
 
-        float scaleWidth = ((float) newWidth) / width;
-        float scaleHeight = ((float) newHeight) / height;
+        float scaleWidth = newWidth / width;
+        float scaleHeight = newHeight / height;
+        float scale = Math.max(scaleHeight, scaleWidth);
 
         Matrix matrix = new Matrix();
-        matrix.postScale(scaleWidth, scaleHeight);
-        Bitmap resizedBitmap = Bitmap.createBitmap(BitmapOrg, 0, 0, width,
-                height, matrix, true);
+        matrix.postScale(scale, scale);
+        Bitmap resizedBitmap = Bitmap.createBitmap(bitmap,
+                (int) ((width - w / scale) / 2), (int) ((height - h / scale) / 2),
+                (int) (w / scale), (int) (h / scale), matrix, true);
         return resizedBitmap;
     }
 
