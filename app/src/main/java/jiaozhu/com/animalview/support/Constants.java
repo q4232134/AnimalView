@@ -45,7 +45,7 @@ public class Constants {
     /**
      * 数据库版本
      */
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 2;
     /**
      * 设备标识
      */

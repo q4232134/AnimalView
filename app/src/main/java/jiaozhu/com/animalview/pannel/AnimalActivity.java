@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import jiaozhu.com.animalview.dao.FileModelDao;
+import jiaozhu.com.animalview.control.FileModelOpe;
 import jiaozhu.com.animalview.model.FileModel;
 import jiaozhu.com.animalview.support.Constants;
 import jiaozhu.com.animalview.support.Preferences;
@@ -196,7 +196,7 @@ public class AnimalActivity extends BaseAnimalActivity<File, AnimalActivity.Entr
         FileModel temp = commList.get(indexOfList(file));
         temp.setLastPage(lastPage);
         Preferences.getInstance().saveHistory(file);
-        FileModelDao.getInstance().replace(temp);
+        FileModelOpe.getInstance().replace(temp);
         return false;
     }
 

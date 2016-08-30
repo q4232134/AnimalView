@@ -6,14 +6,12 @@ import java.io.File;
 import java.io.IOException;
 
 import jiaozhu.com.animalview.commonTools.CrashHandler;
-import jiaozhu.com.animalview.dao.DBHelper;
-import jiaozhu.com.animalview.dao.FileModelDao;
+import jiaozhu.com.animalview.control.DbManager;
 
 /**
  * Created by apple on 15/10/30.
  */
 public class CApplication extends Application {
-    DBHelper dbHelper = new DBHelper(this);
 
     @Override
     public void onCreate() {
@@ -21,13 +19,11 @@ public class CApplication extends Application {
         super.onCreate();
         System.setProperty("jcifs.smb.client.dfs.disabled", "true");
         Preferences.init(this);
-        FileModelDao.init(dbHelper);
-        FileModelDao.setDebug(true);
         CrashHandler.init(this, Constants.ROOT_DIR_PATH + File.separator + "crash.log");
 
         Constants.CACHE_DIR = getCacheDir();
         initPath(Constants.ROOT_DIR, Constants.CACHE_DIR);
-
+        DbManager.init(this, Constants.DB_NAME);
         if (!Constants.NO_MEDIA.exists()) {
             try {
                 Constants.NO_MEDIA.createNewFile();

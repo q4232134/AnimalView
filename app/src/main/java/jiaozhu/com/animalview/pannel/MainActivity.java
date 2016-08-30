@@ -41,7 +41,7 @@ import jcifs.smb.SmbFile;
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.commonTools.SelectorRecyclerAdapter;
-import jiaozhu.com.animalview.dao.FileModelDao;
+import jiaozhu.com.animalview.control.FileModelOpe;
 import jiaozhu.com.animalview.model.FileModel;
 import jiaozhu.com.animalview.pannel.Adapter.FileAdapter;
 import jiaozhu.com.animalview.support.Constants;
@@ -360,14 +360,14 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             @Override
             public void runnable() {
                 Map<String, FileModel> newMap = getDirList(rootFile);
-                Map<String, FileModel> oldMap = FileModelDao.getInstance().getModelsByNames(newMap.keySet());
+                Map<String, FileModel> oldMap = FileModelOpe.getInstance().getModelsByNames(newMap.keySet());
                 for (Map.Entry<String, FileModel> entry : newMap.entrySet()) {
                     FileModel temp = oldMap.get(entry.getKey());
                     if (temp != null) {
                         entry.getValue().setLastPage(temp.getLastPage());
                     }
                 }
-                FileModelDao.getInstance().replace(new ArrayList<>(newMap.values()));
+                FileModelOpe.getInstance().replace(new ArrayList<>(newMap.values()));
             }
 
             @Override
@@ -383,11 +383,10 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
      * 查询数据库并清除无用数据
      */
     private void deleteUnExistData() {
-        List<FileModel> list = FileModelDao.getInstance()
-                .getModelByTime(System.currentTimeMillis() - Constants.HISTORY_DURATION);
+        List<FileModel> list = FileModelOpe.getInstance().getModelByTime(System.currentTimeMillis() - Constants.HISTORY_DURATION);
         for (FileModel model : list) {
             if (!model.getFile().exists()) {
-                FileModelDao.getInstance().delete(model.getName());
+                FileModelOpe.getInstance().delete(model);
                 //删除缓存文件
                 model.getCacheFile().delete();
             }
@@ -536,7 +535,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                     }
                 });
                 if (files != null) {
-                    Map<String, FileModel> models = FileModelDao.getInstance().getModelsByFiles(Arrays.asList(files));
+                    Map<String, FileModel> models = FileModelOpe.getInstance().getModelsByFiles(Arrays.asList(files));
                     for (File temp : files) {
                         FileModel model = models.get(temp.getName());
                         //数据库不存在则创建model并存入数据库
@@ -544,11 +543,13 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                             model = new FileModel();
                             model.setFile(temp);
                             model.getStatus();
-                            FileModelDao.getInstance().replace(model);
+                            FileModelOpe.getInstance().replace(model);
                         }
                         //在历史文件路径中的file全部标示
                         if ((historyFile.getPath() + "/").startsWith(model.getPath() + "/")) {
                             model.setHistory(true);
+                        }else{
+                            model.setHistory(false);
                         }
                         //判断是否需要显示在目录与是否能够打开
                         if (model.showInList()) {
