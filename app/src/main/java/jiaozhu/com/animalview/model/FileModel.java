@@ -128,7 +128,6 @@ public class FileModel {
         this.isHistory = isHistory;
     }
 
-
     public File getFile() {
         if (file == null)
             file = new File(path);
@@ -180,7 +179,7 @@ public class FileModel {
             public void onBackgroundFinished() {
                 view.setImageBitmap(bm);
             }
-        });
+        }, false);
     }
 
     /**
@@ -280,8 +279,8 @@ public class FileModel {
                 });
             }
             if (header != null) {
-                Bitmap temp = Tools.getBitmapByRar(archive, header);
-                Bitmap bm = resizeBitmap(temp);
+                Bitmap bm = Tools.getBitmapByRar(archive, header, Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
+                bm = resizeBitmap(bm);
                 Tools.saveBitmap(bm, getCacheFile());
                 return bm;
             }
@@ -343,8 +342,8 @@ public class FileModel {
         if (entry != null) {
             try {
                 ZipFile file = new ZipFile(getFile());
-                Bitmap temp = Tools.getBitmapByZip(file, entry);
-                Bitmap bm = resizeBitmap(temp);
+                Bitmap bm = Tools.getBitmapByZip(file, entry,Constants.CACHE_WIDTH,Constants.CACHE_HEIGHT);
+                bm=resizeBitmap(bm);
                 Tools.saveBitmap(bm, getCacheFile());
                 return bm;
             } catch (IOException e) {

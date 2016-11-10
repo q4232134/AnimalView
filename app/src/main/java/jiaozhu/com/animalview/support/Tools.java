@@ -204,6 +204,39 @@ public class Tools {
         return bitmap;
     }
 
+    /**
+     * 读取ZIP文件并生成缩略图
+     *
+     * @param zip    指定压缩文件
+     * @param entry  压缩文件中的图片
+     * @param width  期待宽度
+     * @param height 期待高度
+     * @return
+     */
+    public static Bitmap getBitmapByZip(ZipFile zip, ZipEntry entry, int width, int height) {
+        Bitmap bitmap = null;
+        try {
+            InputStream inputStream = zip.getInputStream(entry);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+            bitmap = decodeSampledBitmap(input2byte(bufferedInputStream), width, height);
+            inputStream.close();
+            bufferedInputStream.close();
+        } catch (Exception e) {
+        }
+        return bitmap;
+    }
+
+    public static final byte[] input2byte(InputStream inStream)
+            throws IOException {
+        ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
+        byte[] buff = new byte[100];
+        int rc = 0;
+        while ((rc = inStream.read(buff, 0, 100)) > 0) {
+            swapStream.write(buff, 0, rc);
+        }
+        byte[] in2b = swapStream.toByteArray();
+        return in2b;
+    }
 
     /**
      * 读取RAR压缩文件为图片
@@ -228,6 +261,39 @@ public class Tools {
     }
 
     /**
+     * 读取RAR压缩图片为缩略图
+     *
+     * @param archive 指定压缩文件
+     * @param header  压缩文件中的图片
+     * @param width   期待宽度
+     * @param height  期待高度
+     * @return
+     */
+    public static Bitmap getBitmapByRar(Archive archive, FileHeader header, int width, int height) {
+        Bitmap bitmap = null;
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            archive.extractFile(header, outputStream);
+            bitmap = decodeSampledBitmap(outputStream.toByteArray(), width, height);
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    public static Bitmap decodeSampledBitmap(byte[] b, int reqWidth, int reqHeight) throws IOException {
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(b, 0, b.length, options);
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeByteArray(b, 0, b.length, options);
+    }
+
+
+
+    /**
      * 等比缩小并截取中间部分
      *
      * @param bitmap 原图
@@ -249,8 +315,8 @@ public class Tools {
         Matrix matrix = new Matrix();
         matrix.postScale(scale, scale);
         Bitmap resizedBitmap = Bitmap.createBitmap(bitmap,
-                (int) ((width - w / scale) / 2), (int) ((height - h / scale) / 2),
-                (int) (w / scale), (int) (h / scale), matrix, true);
+                0, (int) ((height - newHeight / scale) / 2),
+                (int) (newWidth / scale), (int) (newHeight / scale), matrix, true);
         return resizedBitmap;
     }
 

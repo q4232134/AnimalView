@@ -42,7 +42,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         for (StackTraceElement element : ex.getStackTrace()) {
             content.append(element).append("\n");
         }
-        content.append(format.format(new Date())+"---------------------------------------------------------------\n");
+        content.append(format.format(new Date()) + "---------------------------------------------------------------\n");
         writeFile(new File(logPath), content.toString());
         if (defaultHandler == null) {
             android.os.Process.killProcess(android.os.Process.myPid());
