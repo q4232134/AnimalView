@@ -62,7 +62,6 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     protected ImagePagerAdapter<G> adapter;
     protected boolean isMultiAdder = false;//是否使用多线程加载
 
-
     protected byte splitStatus = Preferences.SPLIT_AUTO;
     protected byte directionStatus = Preferences.DIRECTION_LR;
     protected boolean uiShowed = false;
@@ -142,6 +141,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         initPopView();
         initData();
     }
+
 
     private void initPopView() {
         View contentView = LayoutInflater.from(this).inflate(

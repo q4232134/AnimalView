@@ -189,8 +189,16 @@ public class FileModel {
      */
 
     public File getCacheFile() {
-        String name = Tools.md516(getName()) + ".cache";
-        return new File(Constants.CACHE_DIR + File.separator + name);
+        return new File(Constants.CACHE_DIR + File.separator + getCacheName());
+    }
+
+    /**
+     * 获取cache名称
+     *
+     * @return
+     */
+    public String getCacheName() {
+        return Tools.md516(getName()) + ".cache";
     }
 
     /**
@@ -342,8 +350,8 @@ public class FileModel {
         if (entry != null) {
             try {
                 ZipFile file = new ZipFile(getFile());
-                Bitmap bm = Tools.getBitmapByZip(file, entry,Constants.CACHE_WIDTH,Constants.CACHE_HEIGHT);
-                bm=resizeBitmap(bm);
+                Bitmap bm = Tools.getBitmapByZip(file, entry, Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
+                bm = resizeBitmap(bm);
                 Tools.saveBitmap(bm, getCacheFile());
                 return bm;
             } catch (IOException e) {

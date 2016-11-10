@@ -77,6 +77,13 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
     }
 
     @Override
+    public void onViewRecycled(ViewHolder holder) {
+        holder.mImage.setImageBitmap(null);
+        super.onViewRecycled(holder);
+    }
+
+
+    @Override
     public int getItemCount() {
         return list.size();
     }
@@ -97,5 +104,6 @@ public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder>
         }
 
     }
+
 
 }
