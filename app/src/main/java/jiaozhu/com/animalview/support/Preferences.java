@@ -55,6 +55,7 @@ public class Preferences {
     public static final String SETTING_LONG_CLICK = "setting-long-click";//长按
     public static final String SETTING_DOUBLE_CLICK = "setting-double-click";//双击动作
     public static final String SETTING_SLIDE_SWITCH = "setting-slide-switch";//边缘滑动
+    public static final String SETTING_DRAG_PREVIEW = "setting-drag-preview";//拖拽预览
     public static final String SETTING_LAYOUT_SWITCH = "setting-layout-switch";//当前布局
 
     public static SharedPreferences sharedPreferences;
@@ -83,6 +84,10 @@ public class Preferences {
 
     public boolean canSlideSwitch() {
         return sharedPreferences.getBoolean(SETTING_SLIDE_SWITCH, true);
+    }
+
+    public boolean isDragPreview() {
+        return sharedPreferences.getBoolean(SETTING_DRAG_PREVIEW, true);
     }
 
 

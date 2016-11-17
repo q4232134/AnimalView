@@ -187,13 +187,17 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progress = -1;
 
+            //TODO
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
+                    startDrag();
                     this.progress = progress;
                     freshPageNum();
                     popupWindow.showAtLocation(mLayout, Gravity.CENTER, 0, 0);
                     delayedRun(Constants.HIDE_UI_DELAY);
+
+                    mViewPager.setCurrentItem(progress, false);
                 }
             }
 
@@ -207,9 +211,11 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
                 if (progress >= 0) {
                     //拖动进度条后初始化最后位置
                     lastPosition = 0;
+                    stopDrag();
                     showLastPageByChild = false;
-                    mViewPager.setCurrentItem(progress, false);
+//                    mViewPager.setCurrentItem(progress, false);
                     popupWindow.dismiss();
+                    mViewPager.setOffscreenPageLimit(3);
                 }
             }
         });
@@ -737,6 +743,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
 
             @Override
             public boolean onTouchEvent(View v, MotionEvent event) {
+                //TODO
                 int add = ((int) event.getY() - oy) / 10;
                 int temp = add + mSeekBar.getProgress() + 1;
                 if (temp < 0) temp = 0;
@@ -776,6 +783,20 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         };
     }
 
+    /**
+     * 开始拖拽进度条
+     */
+    protected void startDrag() {
+        mViewPager.setOffscreenPageLimit(1);
+    }
+
+    /**
+     * 停止拖拽进度条
+     */
+    protected void stopDrag() {
+        mViewPager.setOffscreenPageLimit(3);
+    }
+
 
     /**
      * 主要适配器
@@ -807,6 +828,8 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
 
         @Override
         public View instantiateItem(ViewGroup container, final int position) {
+            //TODO
+            System.out.println(position);
             final List<Bitmap> bms = new ArrayList<>();
             final HackyViewPager viewPager = new HackyViewPager(container.getContext());
             final ContentPagerAdapter contentPagerAdapter = new ContentPagerAdapter(bms, viewPager, this);

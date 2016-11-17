@@ -22,7 +22,7 @@ public class Constants {
     /**
      * 边缘触控宽度
      */
-    public static final float SLIDE_WIDTH = 100;
+    public static final float SLIDE_WIDTH = 130;
 
     /**
      * 历史记录保存长度

@@ -110,6 +110,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference(Preferences.SETTING_LONG_CLICK));
             bindPreferenceSummaryToValue(findPreference(Preferences.SETTING_DOUBLE_CLICK));
             bindPreferenceSummaryToValue(findPreference(Preferences.SETTING_SLIDE_SWITCH));
+            bindPreferenceSummaryToValue(findPreference(Preferences.SETTING_DRAG_PREVIEW));
         }
 
     }

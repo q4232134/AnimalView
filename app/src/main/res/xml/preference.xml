@@ -12,6 +12,11 @@
             android:title="@string/action_double_press" />
         <SwitchPreference
             android:key="setting-slide-switch"
+            android:summary="@string/action_slide_move_summary"
             android:title="@string/action_slide_move" />
+        <SwitchPreference
+            android:key="setting-drag-preview"
+            android:summary="@string/action_drag_preview_summary"
+            android:title="@string/action_drag_preview" />
     </PreferenceCategory>
 </PreferenceScreen>
