@@ -61,9 +61,10 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     protected List<G> list = new ArrayList<>();
     protected ImagePagerAdapter<G> adapter;
     protected boolean isMultiAdder = false;//是否使用多线程加载
+    protected boolean canDragPreview = Preferences.getInstance().canDragPreview();//是否启用拖拽预览
 
-    protected byte splitStatus = Preferences.SPLIT_AUTO;
-    protected byte directionStatus = Preferences.DIRECTION_LR;
+    protected byte splitStatus = Preferences.SPLIT_AUTO;//当前分割状态
+    protected byte directionStatus = Preferences.DIRECTION_LR;//当前方向
     protected boolean uiShowed = false;
     protected boolean showLastPageByChild = false;//双页图片载入时是否应当默认先显示后一页(从后向前翻页时需要先显示后一页)
 
@@ -73,8 +74,8 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     public static final byte TOUCH_FRONT = 1;
     public static final byte TOUCH_AFTER = 2;
 
-    protected Runnable doubleClickAction = null;
-    protected Runnable longClickAction = null;
+    protected Runnable doubleClickAction = null;//双击动作
+    protected Runnable longClickAction = null;//长按动作
 
     protected Runnable noneAction = null;
 
@@ -191,13 +192,12 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
-                    startDrag();
                     this.progress = progress;
                     freshPageNum();
                     popupWindow.showAtLocation(mLayout, Gravity.CENTER, 0, 0);
                     delayedRun(Constants.HIDE_UI_DELAY);
+                    startJump(progress);
 
-                    mViewPager.setCurrentItem(progress, false);
                 }
             }
 
@@ -211,11 +211,9 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
                 if (progress >= 0) {
                     //拖动进度条后初始化最后位置
                     lastPosition = 0;
-                    stopDrag();
                     showLastPageByChild = false;
-//                    mViewPager.setCurrentItem(progress, false);
                     popupWindow.dismiss();
-                    mViewPager.setOffscreenPageLimit(3);
+                    stopJump(progress);
                 }
             }
         });
@@ -730,6 +728,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
 
     /**
      * 转换onTouchListener
+     * 侧面滑动监听器
      *
      * @param touchListener
      * @return
@@ -786,15 +785,22 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     /**
      * 开始拖拽进度条
      */
-    protected void startDrag() {
-        mViewPager.setOffscreenPageLimit(1);
+    protected void startJump(int progress) {
+        if(canDragPreview) {
+            mViewPager.setOffscreenPageLimit(1);
+            mViewPager.setCurrentItem(progress, false);
+        }
     }
 
     /**
      * 停止拖拽进度条
      */
-    protected void stopDrag() {
-        mViewPager.setOffscreenPageLimit(3);
+    protected void stopJump(int progress) {
+        if(canDragPreview) {
+            mViewPager.setOffscreenPageLimit(3);
+        }else{
+            mViewPager.setCurrentItem(progress, false);
+        }
     }
 
 
@@ -829,7 +835,6 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         @Override
         public View instantiateItem(ViewGroup container, final int position) {
             //TODO
-            System.out.println(position);
             final List<Bitmap> bms = new ArrayList<>();
             final HackyViewPager viewPager = new HackyViewPager(container.getContext());
             final ContentPagerAdapter contentPagerAdapter = new ContentPagerAdapter(bms, viewPager, this);
@@ -837,7 +842,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
             viewPager.setAdapter(contentPagerAdapter);
 
             BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
-                //不能再非主线程更新bms
+                //不能在非主线程更新bms
                 List<Bitmap> tempList = new ArrayList<>();
 
                 @Override
@@ -861,6 +866,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
                         default:
                             tempList.add(bm);
                     }
+                    System.out.println(position);
                 }
 
                 /**

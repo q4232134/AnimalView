@@ -86,7 +86,7 @@ public class Preferences {
         return sharedPreferences.getBoolean(SETTING_SLIDE_SWITCH, true);
     }
 
-    public boolean isDragPreview() {
+    public boolean canDragPreview() {
         return sharedPreferences.getBoolean(SETTING_DRAG_PREVIEW, true);
     }
 

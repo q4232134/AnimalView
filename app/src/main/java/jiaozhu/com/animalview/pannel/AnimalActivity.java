@@ -31,9 +31,6 @@ import jiaozhu.com.animalview.support.Tools;
 public class AnimalActivity extends BaseAnimalActivity<File, AnimalActivity.Entry> {
     List<FileModel> commList = Preferences.list;
     private Archive archive = null;//header必须和archive一一匹配
-    {
-        isMultiAdder = true;
-    }
 
     @Override
     File getFileByPath(String path) {
