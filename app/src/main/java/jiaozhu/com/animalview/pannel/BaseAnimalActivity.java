@@ -25,7 +25,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
@@ -786,7 +788,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
      * 开始拖拽进度条
      */
     protected void startJump(int progress) {
-        if(canDragPreview) {
+        if (canDragPreview) {
             mViewPager.setOffscreenPageLimit(1);
             mViewPager.setCurrentItem(progress, false);
         }
@@ -796,13 +798,14 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
      * 停止拖拽进度条
      */
     protected void stopJump(int progress) {
-        if(canDragPreview) {
+        if (canDragPreview) {
             mViewPager.setOffscreenPageLimit(3);
-        }else{
+        } else {
             mViewPager.setCurrentItem(progress, false);
         }
     }
 
+    private Set<Integer> currentSet = new HashSet<>();
 
     /**
      * 主要适配器
@@ -831,10 +834,16 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
             return list.size();
         }
 
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            currentSet.remove(position);
+            super.destroyItem(container,position,object);
+        }
 
         @Override
         public View instantiateItem(ViewGroup container, final int position) {
             //TODO
+            currentSet.add(position);
             final List<Bitmap> bms = new ArrayList<>();
             final HackyViewPager viewPager = new HackyViewPager(container.getContext());
             final ContentPagerAdapter contentPagerAdapter = new ContentPagerAdapter(bms, viewPager, this);
@@ -844,11 +853,14 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
             BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
                 //不能在非主线程更新bms
                 List<Bitmap> tempList = new ArrayList<>();
-
                 @Override
                 public void runnable() {
                     Bitmap bm;
+                    if (!currentSet.contains(position)) return;
                     bm = getBitmap(list.get(position));
+                    if (!currentSet.contains(position)) {
+                        return;
+                    }
                     switch (splitStatus) {
                         case Preferences.SPLIT_AUTO:
                             if (bm != null && bm.getHeight() < bm.getWidth() * 3 / 4) {
@@ -866,7 +878,6 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
                         default:
                             tempList.add(bm);
                     }
-                    System.out.println(position);
                 }
 
                 /**
