@@ -360,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             @Override
             public void runnable() {
                 Map<String, FileModel> newMap = getDirList(rootFile);
-                Map<String, FileModel> oldMap = FileModelOpe.getInstance().getModelsByNames(newMap.keySet());
+                Map<String, FileModel> oldMap = FileModelOpe.getInstance().getModelsByPaths(newMap.keySet());
                 for (Map.Entry<String, FileModel> entry : newMap.entrySet()) {
                     FileModel temp = oldMap.get(entry.getKey());
                     if (temp != null) {
@@ -630,7 +630,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             FileModel model = new FileModel();
             model.setFile(file);
             model.setStatus(FileModel.STATUS_ZIP);
-            map.put(file.getName(), model);
+            map.put(file.getPath(), model);
             return map;
         }
         //如果为目录
@@ -653,7 +653,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             FileModel model = new FileModel();
             model.setFile(file);
             model.setStatus(status);
-            map.put(file.getName(), model);
+            map.put(file.getPath(), model);
         }
         return map;
     }

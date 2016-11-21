@@ -40,9 +40,9 @@ public class FileModelOpe extends BaseOpe<FileModel> {
     public Map<String, FileModel> getModelsByFiles(Collection<File> files) {
         List<String> list = new ArrayList<>();
         for (File temp : files) {
-            list.add(temp.getName());
+            list.add(temp.getPath());
         }
-        return getModelsByNames(list);
+        return getModelsByPaths(list);
     }
 
     /**
@@ -54,25 +54,25 @@ public class FileModelOpe extends BaseOpe<FileModel> {
     public Map<String, FileModel> getModelsByModels(Collection<FileModel> models) {
         List<String> list = new ArrayList<>();
         for (FileModel temp : models) {
-            list.add(temp.getName());
+            list.add(temp.getPath());
         }
-        return getModelsByNames(list);
+        return getModelsByPaths(list);
     }
 
     /**
      * 获取路径对应的model(如果存在的话)
      *
-     * @param names
+     * @param paths
      * @return
      */
-    public Map<String, FileModel> getModelsByNames(Collection<String> names) {
+    public Map<String, FileModel> getModelsByPaths(Collection<String> paths) {
         Map<String, FileModel> map = new Hashtable<>();
-        if (names.isEmpty()) return map;
+        if (paths.isEmpty()) return map;
         StringBuffer sb = new StringBuffer();
         QueryBuilder queryBuilder = getDao().queryBuilder();
-        for (String temp : names) {
+        for (String temp : paths) {
             //对单引号进行特殊处理
-            sb.append("name = '").append(temp.replace("'", "''")).append("' or ");
+            sb.append("path = '").append(temp.replace("'", "''")).append("' or ");
         }
         String temp = sb.substring(0, sb.length() - 3);
         List<FileModel> list = queryBuilder.where(new WhereCondition.StringCondition(temp)).list();
