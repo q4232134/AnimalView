@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="150dp"
+    android:layout_height="150dp"
     android:background="@drawable/bg_gray_view"
     android:orientation="vertical">
 
@@ -14,5 +14,16 @@
         android:text="123"
         android:textSize="60dp"
         android:gravity="center"/>
+    <TextView
+        android:id="@+id/text2"
+        android:layout_gravity="bottom|right"
+        android:layout_margin="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/holo_green_light"
+        android:text="123"
+        android:textSize="14dp"
+        android:gravity="center"/>
 
-</LinearLayout>
+
+</FrameLayout>

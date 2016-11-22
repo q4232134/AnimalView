@@ -54,7 +54,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     protected FrameLayout mLayout;
     protected View mToolBar;
     protected SeekBar mSeekBar;
-    protected TextView mPageNum, mPopNum;
+    protected TextView mPageNum, mPopNum, mTotalNum;
     protected Button mRotation, mSplit, mDirection, mNext;
     protected PopupWindow popupWindow;
     public static final String PARAM_PATH = "param_path";
@@ -146,13 +146,26 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
     }
 
 
+    /**
+     * 初始化页码弹出框
+     */
     private void initPopView() {
         View contentView = LayoutInflater.from(this).inflate(
                 R.layout.view_num, null);
         mPopNum = (TextView) contentView.findViewById(R.id.text);
+        mTotalNum = (TextView) contentView.findViewById(R.id.text2);
         popupWindow = new PopupWindow(contentView,
                 ViewPager.LayoutParams.WRAP_CONTENT, ViewPager.LayoutParams.WRAP_CONTENT, true);
         popupWindow.setTouchable(false);
+    }
+
+    /**
+     * 设置弹出页码
+     * @param num
+     */
+    private void setPopViewNum(int num) {
+        mPopNum.setText("" + num);
+        mTotalNum.setText("" + (num * 100 / adapter.getCount())+"%");
     }
 
     protected void initData() {
@@ -323,6 +336,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
             }
         setTitle(getName(currentFile));
         mSeekBar.setMax(adapter.getCount() - 1);
+        setPopViewNum(pageNum);
         mSeekBar.setProgress(pageNum);
         freshPageNum();
         adapter.notifyDataSetChanged();
@@ -331,8 +345,11 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         mViewPager.setCurrentItem(pageNum, false);
     }
 
+    /**
+     * 刷新页码
+     */
     protected void freshPageNum() {
-        mPopNum.setText("" + (mSeekBar.getProgress() + 1));
+        setPopViewNum(mSeekBar.getProgress() + 1);
         mPageNum.setText((mSeekBar.getProgress() + 1) + "\n" + (mSeekBar.getMax() + 1));
     }
 
@@ -768,7 +785,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
                             }
                         }
                         if (flag > 0) {
-                            mPopNum.setText("" + (temp + 1));
+                            setPopViewNum(temp + 1);
                         }
                         break;
                     case MotionEvent.ACTION_UP:
@@ -837,7 +854,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
             currentSet.remove(position);
-            super.destroyItem(container,position,object);
+            super.destroyItem(container, position, object);
         }
 
         @Override
@@ -853,6 +870,7 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
             BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
                 //不能在非主线程更新bms
                 List<Bitmap> tempList = new ArrayList<>();
+
                 @Override
                 public void runnable() {
                     Bitmap bm;
