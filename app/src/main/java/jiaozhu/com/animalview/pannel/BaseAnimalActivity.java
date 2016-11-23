@@ -140,7 +140,17 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         mNext = (Button) findViewById(R.id.next);
 
         mLayout.setOnSystemUiVisibilityChangeListener(this);
-
+        //设置滑动监听与截断
+        if (Preferences.getInstance().canSlideSwitch()) {
+            final OnTouchListener onTouchListener = getOnTouchListener(null);
+            mViewPager.setOnTouchListener(onTouchListener);
+            mViewPager.setInterceptListener(new HackyViewPager.InterceptListener() {
+                @Override
+                public boolean onInterceptTouchEvent(MotionEvent ev) {
+                    return onTouchListener.onTouch(mViewPager, ev);
+                }
+            });
+        }
         initPopView();
         initData();
     }
@@ -161,11 +171,12 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
 
     /**
      * 设置弹出页码
+     *
      * @param num
      */
     private void setPopViewNum(int num) {
         mPopNum.setText("" + num);
-        mTotalNum.setText("" + (num * 100 / adapter.getCount())+"%");
+        mTotalNum.setText("" + (num * 100 / adapter.getCount()) + "%");
     }
 
     protected void initData() {
@@ -203,7 +214,6 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progress = -1;
 
-            //TODO
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
@@ -730,10 +740,6 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
                     }
                 });
             }
-            if (Preferences.getInstance().canSlideSwitch()) {
-                View.OnTouchListener touchListener = (View.OnTouchListener) photoView.getIPhotoViewImplementation();
-                photoView.setOnTouchListener(getOnTouchListener(touchListener));
-            }
             container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             return photoView;
         }
@@ -754,18 +760,20 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
      */
     private OnTouchListener getOnTouchListener(View.OnTouchListener touchListener) {
         return new OnTouchListener(touchListener) {
+
             int flag = 0;//0 未测定，-1不启动 ，1启动
             int ox = 0;
             int oy = 0;
+            int lastPageNum = 0;//最后跳转的页面
+            int startPageNum = 0;//开始触发跳转的页面
 
 
             @Override
             public boolean onTouchEvent(View v, MotionEvent event) {
-                //TODO
                 int add = ((int) event.getY() - oy) / 10;
-                int temp = add + mSeekBar.getProgress() + 1;
-                if (temp < 0) temp = 0;
-                if (temp > mSeekBar.getMax()) temp = mSeekBar.getMax();
+                int target = add + startPageNum + 1;
+                if (target < 0) target = 0;
+                if (target > mSeekBar.getMax()) target = mSeekBar.getMax();
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         ox = (int) event.getX();
@@ -773,25 +781,30 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
                         flag = 0;
                         break;
                     case MotionEvent.ACTION_MOVE:
+                        //测定是否触发滑动跳转
                         if (flag == 0 && ox < Constants.SLIDE_WIDTH && event.getX() < Constants.SLIDE_WIDTH
                                 && Math.abs(event.getY() - oy) + Math.abs(event.getX() - ox) > 20) {
                             if (Math.abs(event.getY() - oy) > Math.abs(event.getX() - ox)) {
                                 flag = 1;
                                 ox = (int) event.getX();
                                 oy = (int) event.getY();
+                                startPageNum = mSeekBar.getProgress();
                                 popupWindow.showAtLocation(mLayout, Gravity.CENTER, 0, 0);
                             } else {
                                 flag = -1;
                             }
                         }
-                        if (flag > 0) {
-                            setPopViewNum(temp + 1);
+                        if (flag > 0 && target != lastPageNum) {
+                            startJump(target);
+                            setPopViewNum(target + 1);
+                            lastPageNum = target;
                         }
-                        break;
+                        return flag > 0;
                     case MotionEvent.ACTION_UP:
                         if (flag > 0) {
-                            fresh(temp - 1);
+                            flag = 0;
                             popupWindow.dismiss();
+                            stopJump(target);
                             hideUI();
                         }
                         break;
@@ -859,7 +872,6 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
 
         @Override
         public View instantiateItem(ViewGroup container, final int position) {
-            //TODO
             currentSet.add(position);
             final List<Bitmap> bms = new ArrayList<>();
             final HackyViewPager viewPager = new HackyViewPager(container.getContext());

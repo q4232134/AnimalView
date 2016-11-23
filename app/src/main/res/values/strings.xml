@@ -58,7 +58,7 @@
     <string name="action_long_press">长按动作</string>
     <string name="action_double_press">双击动作</string>
     <string name="action_slide_move">边缘滑动跳转</string>
-    <string name="action_slide_move_summary">滑动边缘将会进行页面跳转</string>
+    <string name="action_slide_move_summary">滑动边缘将会进行页面跳转，可以和拖动预览同时使用</string>
     <string name="action_drag_preview">拖动预览</string>
     <string name="action_drag_preview_summary">在拖动进度条同时显示当前页内容，在性能较低的机器上可能会造成卡顿</string>
 </resources>

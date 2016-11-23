@@ -27,8 +27,8 @@ import android.view.MotionEvent;
  * @author Chris Banes
  */
 public class HackyViewPager extends ViewPager {
-
     private boolean isLocked;
+    private InterceptListener interceptListener;
 
     public HackyViewPager(Context context) {
         super(context);
@@ -40,16 +40,20 @@ public class HackyViewPager extends ViewPager {
         isLocked = false;
     }
 
+    public InterceptListener getInterceptListener() {
+        return interceptListener;
+    }
+
+    public void setInterceptListener(InterceptListener interceptListener) {
+        this.interceptListener = interceptListener;
+    }
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         if (!isLocked) {
-            try {
-                return super.onInterceptTouchEvent(ev);
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-                return false;
-            }
+            if (super.onInterceptTouchEvent(ev)) return true;
         }
+        if (interceptListener != null) return interceptListener.onInterceptTouchEvent(ev);
         return false;
     }
 
@@ -73,6 +77,10 @@ public class HackyViewPager extends ViewPager {
     @Override
     public PagerAdapter getAdapter() {
         return super.getAdapter();
+    }
+
+    public interface InterceptListener {
+        boolean onInterceptTouchEvent(MotionEvent ev);
     }
 }
 
