@@ -8,12 +8,9 @@ import android.widget.ImageView;
 import com.github.junrar.Archive;
 import com.github.junrar.exception.RarException;
 import com.github.junrar.rarfile.FileHeader;
-
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Generated;
-import org.greenrobot.greendao.annotation.Id;
-import org.greenrobot.greendao.annotation.Keep;
-import org.greenrobot.greendao.annotation.Transient;
+import com.jiaozhu.ahibernate.annotation.Column;
+import com.jiaozhu.ahibernate.annotation.Id;
+import com.jiaozhu.ahibernate.annotation.Table;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -32,49 +29,36 @@ import jiaozhu.com.animalview.support.Tools;
 /**
  * Created by jiaozhu on 16/4/14.
  */
-@Entity
-@Keep
+@Table(name = "animal_table")
 public class FileModel {
-    public static final int STATUS_NO_CHECK = 0;//未检查目录
-    public static final int STATUS_EMPTY = 1;//空目录
-    public static final int STATUS_SHOW = 2;//可用阅读器打开
-    public static final int STATUS_ZIP = 3;//压缩文档
-    public static final int STATUS_OPEN = 4;//存在子目录
-    public static final int STATUS_OTHER = 5;//未知文档
-    public static final int STATUS_SMB = 6;//远程目录
+    public static final String TABLE_NAME = "animal_table";
+    public static final byte STATUS_NO_CHECK = 0;//未检查目录
+    public static final byte STATUS_EMPTY = 1;//空目录
+    public static final byte STATUS_SHOW = 2;//可用阅读器打开
+    public static final byte STATUS_ZIP = 3;//压缩文档
+    public static final byte STATUS_OPEN = 4;//存在子目录
+    public static final byte STATUS_OTHER = 5;//未知文档
+    public static final byte STATUS_SMB = 6;//远程目录
 
     @Id
-    private Long id;
-
-    private String name;
-
+    @Column(name = "path", type = "varchar2")
     private String path;
 
-    @Transient
+    @Column(name = "name", type = "varchar2")
+    private String name;
+
     private File file;
 
+    @Column(name = "status", type = "integer")
     private int status = STATUS_NO_CHECK;
 
+    @Column(name = "lastPage", type = "integer")
     private int lastPage = -1;//最后阅读页,-1为新记录
 
+    @Column(name = "createTime", type = "date")
     private Date createTime = new Date();//创建时间
 
-    @Transient
     private boolean isHistory = false;//是否为历史记录
-
-    @Generated(hash = 15011320)
-    public FileModel(Long id, String name, String path, int status, int lastPage, Date createTime) {
-        this.id = id;
-        this.name = name;
-        this.path = path;
-        this.status = status;
-        this.lastPage = lastPage;
-        this.createTime = createTime;
-    }
-
-    @Generated(hash = 2083950102)
-    public FileModel() {
-    }
 
     public String getName() {
         return name;
@@ -84,63 +68,17 @@ public class FileModel {
         this.name = name;
     }
 
-    public Long getId() {
-        return this.id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getPath() {
-        return this.path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public int getLastPage() {
-        return this.lastPage;
-    }
-
-    public void setLastPage(int lastPage) {
-        this.lastPage = lastPage;
-    }
-
-    public Date getCreateTime() {
-        return this.createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public boolean getIsHistory() {
-        return this.isHistory;
-    }
-
-    public void setIsHistory(boolean isHistory) {
-        this.isHistory = isHistory;
-    }
-
     public File getFile() {
         if (file == null)
             file = new File(path);
         return file;
     }
 
-
     public void setFile(File file) {
         this.file = file;
         path = file.getPath();
         name = file.getName();
     }
-
 
     public int getStatus() {
         if (status == STATUS_NO_CHECK) {
@@ -154,7 +92,6 @@ public class FileModel {
      *
      * @return
      */
-
     public boolean isAnimal() {
         return getStatus() == STATUS_SHOW || getStatus() == STATUS_ZIP;
     }
@@ -164,7 +101,6 @@ public class FileModel {
      *
      * @param view
      */
-
     public void setImageView(final ImageView view) {
         //缓存图片是否存在
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
@@ -179,7 +115,7 @@ public class FileModel {
             public void onBackgroundFinished() {
                 view.setImageBitmap(bm);
             }
-        }, false);
+        });
     }
 
     /**
@@ -187,18 +123,9 @@ public class FileModel {
      *
      * @return
      */
-
     public File getCacheFile() {
-        return new File(Constants.CACHE_DIR + File.separator + getCacheName());
-    }
-
-    /**
-     * 获取cache名称
-     *
-     * @return
-     */
-    public String getCacheName() {
-        return Tools.md516(getName()) + ".cache";
+        String name = Tools.md516(getName()) + ".cache";
+        return new File(Constants.CACHE_DIR + File.separator + name);
     }
 
     /**
@@ -206,7 +133,6 @@ public class FileModel {
      *
      * @return
      */
-
     public Bitmap getCacheImage() {
         if (!isAnimal()) return null;
         Bitmap bm;
@@ -220,7 +146,6 @@ public class FileModel {
     }
 
     @Nullable
-
     private Bitmap createCache() {
         if (getStatus() == STATUS_ZIP && Tools.getZipType(getFile().getName()) == Tools.ZIP_TYPE) {
             return createZipCache();
@@ -240,7 +165,6 @@ public class FileModel {
      * @return
      */
     @Nullable
-
     private Bitmap createDirCache() {
         File[] files = getFile().listFiles(new FilenameFilter() {
             boolean returned = false;
@@ -269,7 +193,6 @@ public class FileModel {
      * @return
      */
     @Nullable
-
     private Bitmap createRarCache() {
         try {
             Archive archive = new Archive(getFile());
@@ -287,8 +210,8 @@ public class FileModel {
                 });
             }
             if (header != null) {
-                Bitmap bm = Tools.getBitmapByRar(archive, header, Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
-                bm = resizeBitmap(bm);
+                Bitmap temp = Tools.getBitmapByRar(archive, header);
+                Bitmap bm = resizeBitmap(temp);
                 Tools.saveBitmap(bm, getCacheFile());
                 return bm;
             }
@@ -306,7 +229,6 @@ public class FileModel {
      * @param bitmap
      * @return
      */
-
     private Bitmap resizeBitmap(Bitmap bitmap) {
         if (bitmap == null) return null;
         float width = bitmap.getWidth();
@@ -332,7 +254,6 @@ public class FileModel {
      * @return
      */
     @Nullable
-
     private Bitmap createZipCache() {
         List<ZipEntry> list = Tools.listZip(file);
         ZipEntry entry = null;
@@ -350,8 +271,8 @@ public class FileModel {
         if (entry != null) {
             try {
                 ZipFile file = new ZipFile(getFile());
-                Bitmap bm = Tools.getBitmapByZip(file, entry, Constants.CACHE_WIDTH, Constants.CACHE_HEIGHT);
-                bm = resizeBitmap(bm);
+                Bitmap temp = Tools.getBitmapByZip(file, entry);
+                Bitmap bm = resizeBitmap(temp);
                 Tools.saveBitmap(bm, getCacheFile());
                 return bm;
             } catch (IOException e) {
@@ -359,6 +280,10 @@ public class FileModel {
             }
         }
         return null;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 
     public boolean isHistory() {
@@ -369,12 +294,31 @@ public class FileModel {
         isHistory = history;
     }
 
+    public int getLastPage() {
+        return lastPage;
+    }
+
+    public void setLastPage(int lastPage) {
+        this.lastPage = lastPage;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
     /**
      * 获取目录状态
      *
      * @return
      */
-
     private byte getFileStatus() {
         if (file.isFile()) {
             String fileName = file.getName().toLowerCase();
@@ -402,7 +346,6 @@ public class FileModel {
         }
     }
 
-
     private boolean isImageType(File file) {
         String tempName = file.getName().toLowerCase();
         for (String type : Constants.IMAGE_TYPE) {
@@ -425,7 +368,6 @@ public class FileModel {
      *
      * @return
      */
-
     public boolean showInList() {
         if (animalAble()) return true;
         return getStatus() == STATUS_OPEN;
@@ -436,11 +378,9 @@ public class FileModel {
      *
      * @return
      */
-
     public boolean animalAble() {
         return getStatus() == STATUS_ZIP || getStatus() == STATUS_SHOW;
     }
-
 
     @Override
     public String toString() {
@@ -454,7 +394,6 @@ public class FileModel {
                 '}';
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -465,7 +404,6 @@ public class FileModel {
         return path != null ? path.equals(fileModel.path) : fileModel.path == null;
 
     }
-
 
     @Override
     public int hashCode() {

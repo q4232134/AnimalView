@@ -1,1 +1,1 @@
-include ':app', ':PhotoView-release'
+include ':app', ':PhotoView-release', ':ahibernate'

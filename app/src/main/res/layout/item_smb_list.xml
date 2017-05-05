@@ -32,7 +32,6 @@
         android:paddingBottom="3dip"
         android:paddingLeft="15dp"
         android:paddingTop="2dip"
-        android:text="11111"
 
         android:textAppearance="?android:attr/textAppearanceSmall" />
 

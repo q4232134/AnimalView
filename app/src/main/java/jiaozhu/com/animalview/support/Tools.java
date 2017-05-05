@@ -353,10 +353,7 @@ public class Tools {
      */
     public static boolean isDoublePage(String path) {
         Bitmap bm = getBitmap(path, options);
-        if (bm.getHeight() < bm.getWidth() * 3 / 4) {
-            return true;
-        }
-        return false;
+        return bm.getHeight() < bm.getWidth() * 3 / 4;
     }
 
 
@@ -849,10 +846,8 @@ public class Tools {
      */
     public static boolean checkEnable(Context context) {
         NetworkInfo localNetworkInfo = ((ConnectivityManager) context
-                .getSystemService(context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-        if ((localNetworkInfo != null) && (localNetworkInfo.isAvailable()))
-            return true;
-        return false;
+                .getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+        return (localNetworkInfo != null) && (localNetworkInfo.isAvailable());
     }
 
     /**

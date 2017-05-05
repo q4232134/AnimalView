@@ -87,8 +87,7 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
                     files = file.listFiles(new SmbFileFilter() {
                         @Override
                         public boolean accept(SmbFile smbFile) throws SmbException {
-                            if (smbFile.getName().endsWith("/")) return true;
-                            return false;
+                            return smbFile.getName().endsWith("/");
                         }
                     });
                     flag = true;

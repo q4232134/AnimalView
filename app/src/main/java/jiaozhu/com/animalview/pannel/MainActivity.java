@@ -21,6 +21,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.jiaozhu.ahibernate.util.DaoManager;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -41,7 +43,7 @@ import jcifs.smb.SmbFile;
 import jiaozhu.com.animalview.R;
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.commonTools.SelectorRecyclerAdapter;
-import jiaozhu.com.animalview.control.FileModelOpe;
+import jiaozhu.com.animalview.dao.FileModelDao;
 import jiaozhu.com.animalview.model.FileModel;
 import jiaozhu.com.animalview.pannel.Adapter.FileAdapter;
 import jiaozhu.com.animalview.support.Constants;
@@ -360,14 +362,14 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             @Override
             public void runnable() {
                 Map<String, FileModel> newMap = getDirList(rootFile);
-                Map<String, FileModel> oldMap = FileModelOpe.getInstance().getModelsByPaths(newMap.keySet());
+                Map<String, FileModel> oldMap = DaoManager.getInstance().getDao(FileModelDao.class).getModelsByPaths(newMap.keySet());
                 for (Map.Entry<String, FileModel> entry : newMap.entrySet()) {
                     FileModel temp = oldMap.get(entry.getKey());
                     if (temp != null) {
                         entry.getValue().setLastPage(temp.getLastPage());
                     }
                 }
-                FileModelOpe.getInstance().replace(new ArrayList<>(newMap.values()));
+                DaoManager.getInstance().getDao(FileModelDao.class).replace(new ArrayList<>(newMap.values()));
             }
 
             @Override
@@ -383,10 +385,10 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
      * 查询数据库并清除无用数据
      */
     private void deleteUnExistData() {
-        List<FileModel> list = FileModelOpe.getInstance().getModelByTime(System.currentTimeMillis() - Constants.HISTORY_DURATION);
+        List<FileModel> list = DaoManager.getInstance().getDao(FileModelDao.class).getModelByTime(System.currentTimeMillis() - Constants.HISTORY_DURATION);
         for (FileModel model : list) {
             if (!model.getFile().exists()) {
-                FileModelOpe.getInstance().delete(model);
+                DaoManager.getInstance().getDao(FileModelDao.class).delete(model.getPath());
                 //删除缓存文件
                 model.getCacheFile().delete();
             }
@@ -401,7 +403,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         recyclerView.setNestedScrollingEnabled(false);
         adapter = new FileAdapter(list, this);
         adapter.setOnItemClickListener(this);
-        adapter.setSelectorMode(adapter.MODE_MULTI);
+        adapter.setSelectorMode(SelectorRecyclerAdapter.MODE_MULTI);
         adapter.setActionView(toolbar, new SelectorRecyclerAdapter.ActionItemClickedListener() {
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -415,7 +417,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                 int id = item.getItemId();
                 switch (id) {
                     case R.id.action_delete:
-                        List<FileModel> temps = new ArrayList<FileModel>();
+                        List<FileModel> temps = new ArrayList<>();
                         for (int position : adapter.getSelectList()) {
                             temps.add(list.get(position));
                         }
@@ -516,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
             Toast.makeText(this, R.string.msg_can_not_find_dir, Toast.LENGTH_SHORT).show();
         }
         BackgroundExecutor.getInstance().runInBackground(new BackgroundExecutor.Task() {
-            List<FileModel> tempList = new ArrayList<FileModel>();
+            List<FileModel> tempList = new ArrayList<>();
 
             @Override
             public void runnable() {
@@ -529,13 +531,11 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                         if (file.getName().startsWith(".") || file.isHidden())
                             return false;
                         //是否为压缩文件
-                        if (file.isFile() && !Tools.isZipFile(file))
-                            return false;
-                        return true;
+                        return !(file.isFile() && !Tools.isZipFile(file));
                     }
                 });
                 if (files != null) {
-                    Map<String, FileModel> models = FileModelOpe.getInstance().getModelsByFiles(Arrays.asList(files));
+                    Map<String, FileModel> models = DaoManager.getInstance().getDao(FileModelDao.class).getModelsByFiles(Arrays.asList(files));
                     for (File temp : files) {
                         FileModel model = models.get(temp.getName());
                         //数据库不存在则创建model并存入数据库
@@ -543,12 +543,12 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                             model = new FileModel();
                             model.setFile(temp);
                             model.getStatus();
-                            FileModelOpe.getInstance().replace(model);
+                            DaoManager.getInstance().getDao(FileModelDao.class).replace(model);
                         }
                         //在历史文件路径中的file全部标示
                         if ((historyFile.getPath() + "/").startsWith(model.getPath() + "/")) {
                             model.setHistory(true);
-                        }else{
+                        } else {
                             model.setHistory(false);
                         }
                         //判断是否需要显示在目录与是否能够打开
