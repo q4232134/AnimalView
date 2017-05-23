@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -27,16 +28,40 @@ import jiaozhu.com.animalview.model.FileModel;
 public class FileAdapter extends SelectorRecyclerAdapter<FileAdapter.ViewHolder> {
     List<FileModel> list;
     private Resources resource;
+    private ItemViewType itemViewType;
+    public static final int VIEW_TYPE_SINGLE = 0;
+    public static final int VIEW_TYPE_MULTI = 1;
 
-    public FileAdapter(List<FileModel> fileModels, Context context) {
+    /**
+     * 返回item的类型
+     */
+    public interface ItemViewType {
+        int getItemViewType(int position);
+    }
+
+    public FileAdapter(List<FileModel> fileModels, Context context, @Nullable ItemViewType itemViewType) {
         list = fileModels;
         resource = context.getResources();
+        this.itemViewType = itemViewType;
+    }
+
+
+    @Override
+    public int getItemViewType(int position) {
+        if (itemViewType == null) return VIEW_TYPE_SINGLE;
+        return itemViewType.getItemViewType(position);
     }
 
     @Override
     protected ViewHolder onCreateHolder(ViewGroup parent, int viewType) {
+        int id;
+        if (viewType == VIEW_TYPE_MULTI) {
+            id = R.layout.item_file_list_mult;
+        } else {
+            id = R.layout.item_file_list;
+        }
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_file_list, parent, false);
+                .inflate(id, parent, false);
         final ViewHolder vh = new ViewHolder(v);
         return vh;
     }

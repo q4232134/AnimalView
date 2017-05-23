@@ -50,7 +50,7 @@ import jiaozhu.com.animalview.support.Constants;
 import jiaozhu.com.animalview.support.Preferences;
 import jiaozhu.com.animalview.support.Tools;
 
-public class MainActivity extends AppCompatActivity implements SelectorRecyclerAdapter.OnItemClickListener {
+public class MainActivity extends AppCompatActivity implements SelectorRecyclerAdapter.OnItemClickListener, FileAdapter.ItemViewType {
     private static final String TAG = "MainActivity";
     private RecyclerView recyclerView;
     private File rootFile = Constants.ROOT_DIR;
@@ -395,13 +395,14 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
         }
     }
 
+
     private void initData() {
         commList = Preferences.list;
         stack.push(rootFile);
         setLayout(Preferences.getInstance().isSingleLayout());
         //androidL以下需要在这里设置
         recyclerView.setNestedScrollingEnabled(false);
-        adapter = new FileAdapter(list, this);
+        adapter = new FileAdapter(list, this, this);
         adapter.setOnItemClickListener(this);
         adapter.setSelectorMode(SelectorRecyclerAdapter.MODE_MULTI);
         adapter.setActionView(toolbar, new SelectorRecyclerAdapter.ActionItemClickedListener() {
@@ -422,6 +423,9 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
                             temps.add(list.get(position));
                         }
                         showDeleteDialog(temps);
+                        return true;
+                    case R.id.action_cancel:
+                        adapter.cancelSelectorMode();
                         return true;
                 }
                 return false;
@@ -469,8 +473,8 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
      */
     private void changeLayout() {
         boolean isSingleMode = Preferences.getInstance().isSingleLayout();
-        setLayout(!isSingleMode);
         Preferences.getInstance().setSingleLayout(!isSingleMode);
+        setLayout(!isSingleMode);
     }
 
     /**
@@ -661,5 +665,13 @@ public class MainActivity extends AppCompatActivity implements SelectorRecyclerA
     @Override
     public void setTitle(CharSequence title) {
         mToolbarLayout.setTitle(title);
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (!Preferences.getInstance().isSingleLayout() && !Tools.isTablet(this)) {
+            return FileAdapter.VIEW_TYPE_MULTI;
+        }
+        return FileAdapter.VIEW_TYPE_SINGLE;
     }
 }
