@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AnimalView.iml" filepath="$PROJECT_DIR$/AnimalView.iml" />
       <module fileurl="file://$PROJECT_DIR$/PhotoView-release/PhotoView-release.iml" filepath="$PROJECT_DIR$/PhotoView-release/PhotoView-release.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ahibernate/ahibernate.iml" filepath="$PROJECT_DIR$/ahibernate/ahibernate.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

@@ -8,3 +8,5 @@
 /captures
 
 .idea/gradle.xml
+/.idea/
+/ahibernate/build/
