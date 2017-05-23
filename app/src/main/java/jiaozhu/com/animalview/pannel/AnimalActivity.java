@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import com.github.junrar.Archive;
 import com.github.junrar.exception.RarException;
 import com.github.junrar.rarfile.FileHeader;
+import com.jiaozhu.ahibernate.util.DaoManager;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import jiaozhu.com.animalview.control.FileModelOpe;
+import jiaozhu.com.animalview.dao.FileModelDao;
 import jiaozhu.com.animalview.model.FileModel;
 import jiaozhu.com.animalview.support.Constants;
 import jiaozhu.com.animalview.support.Preferences;
@@ -196,7 +197,7 @@ public class AnimalActivity extends BaseAnimalActivity<File, AnimalActivity.Entr
         FileModel temp = commList.get(indexOfList(file));
         temp.setLastPage(lastPage);
         Preferences.getInstance().saveHistory(file);
-        FileModelOpe.getInstance().replace(temp);
+        DaoManager.getInstance().getDao(FileModelDao.class).replace(temp);
         return false;
     }
 

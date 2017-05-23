@@ -8,7 +8,10 @@ import java.sql.Blob;
 import java.util.Date;
 
 import static android.text.style.TtsSpan.TYPE_TEXT;
-import static com.jiaozhu.ahibernate.type.Type.*;
+import static com.jiaozhu.ahibernate.type.Type.TYPE_BLOB;
+import static com.jiaozhu.ahibernate.type.Type.TYPE_FLOAT;
+import static com.jiaozhu.ahibernate.type.Type.TYPE_INTEGER;
+import static com.jiaozhu.ahibernate.type.Type.TYPE_STRING;
 
 /**
  * Created by jiaozhu on 2017/3/30.

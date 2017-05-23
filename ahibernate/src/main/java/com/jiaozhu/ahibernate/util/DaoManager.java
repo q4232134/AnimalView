@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+
 /**
  * Created by jiaozhu on 2017/3/30.
  */
@@ -44,13 +45,14 @@ public class DaoManager {
     /**
      * 获取dao
      *
-     * @param name
+     * @param tableName
      * @return
      */
-    public BaseDaoImpl getDao(String name) {
-        if (!tables.containsKey(name))
-            throw new NoSuchElementException("指定表'" + name + "'并未注册到DaoManager!");
-        return daoMap.get(name);
+    public BaseDaoImpl getDao(String tableName) {
+        if (!tables.containsKey(tableName))
+            throw new
+                    NoSuchElementException("指定表'" + tableName + "'并未注册到DaoManager!");
+        return daoMap.get(tableName);
     }
 
     /**
@@ -60,8 +62,15 @@ public class DaoManager {
      * @param <T>
      * @return
      */
-    public <T> BaseDaoImpl<T> getDao(Class<T> clazz) {
+    public <T> BaseDaoImpl<T> getDaoByTable(Class<T> clazz) {
         return getDao(TableHelper.getTableNameByClass(clazz));
+    }
+
+    public <T extends BaseDaoImpl<G>, G> T getDao(Class<T> clazz) {
+        Class model = ((Class<T>) ((java.lang.reflect.ParameterizedType) clazz
+                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        String name = TableHelper.getTableNameByClass(model);
+        return (T) getDao(name);
     }
 
     /**

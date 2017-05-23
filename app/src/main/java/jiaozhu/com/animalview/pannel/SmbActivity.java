@@ -205,6 +205,5 @@ public class SmbActivity extends AppCompatActivity implements SelectorRecyclerAd
         } catch (SmbException e) {
             e.printStackTrace();
         }
-
     }
 }

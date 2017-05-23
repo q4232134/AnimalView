@@ -2,11 +2,14 @@ package jiaozhu.com.animalview.support;
 
 import android.app.Application;
 
+import com.jiaozhu.ahibernate.util.DaoManager;
+import com.jiaozhu.ahibernate.util.MyDBHelper;
+
 import java.io.File;
 import java.io.IOException;
 
 import jiaozhu.com.animalview.commonTools.CrashHandler;
-import jiaozhu.com.animalview.control.DbManager;
+import jiaozhu.com.animalview.dao.FileModelDao;
 
 /**
  * Created by apple on 15/10/30.
@@ -23,7 +26,8 @@ public class CApplication extends Application {
 
         Constants.CACHE_DIR = getCacheDir();
         initPath(Constants.ROOT_DIR, Constants.CACHE_DIR);
-        DbManager.init(this, Constants.DB_NAME);
+        DaoManager.init(new MyDBHelper(this, Constants.DB_NAME, null, Constants.DB_VERSION));
+        DaoManager.getInstance().registerDao(FileModelDao.class);
         if (!Constants.NO_MEDIA.exists()) {
             try {
                 Constants.NO_MEDIA.createNewFile();
