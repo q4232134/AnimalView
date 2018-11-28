@@ -7,6 +7,9 @@ import com.github.junrar.exception.RarException;
 import com.github.junrar.rarfile.FileHeader;
 import com.jiaozhu.ahibernate.util.DaoManager;
 
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipFile;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -14,8 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import jiaozhu.com.animalview.dao.FileModelDao;
 import jiaozhu.com.animalview.model.FileModel;

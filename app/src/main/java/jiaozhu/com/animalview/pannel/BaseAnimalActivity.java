@@ -176,7 +176,8 @@ public abstract class BaseAnimalActivity<T, G> extends AppCompatActivity impleme
      */
     private void setPopViewNum(int num) {
         mPopNum.setText("" + num);
-        mTotalNum.setText("" + (num * 100 / adapter.getCount()) + "%");
+        if (adapter.getCount() != 0)
+            mTotalNum.setText("" + (num * 100 / adapter.getCount()) + "%");
     }
 
     protected void initData() {

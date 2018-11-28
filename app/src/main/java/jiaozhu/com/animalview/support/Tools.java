@@ -22,6 +22,9 @@ import android.widget.TextView;
 import com.github.junrar.Archive;
 import com.github.junrar.rarfile.FileHeader;
 
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipFile;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -41,8 +44,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import jcifs.smb.SmbFileInputStream;
 import jiaozhu.com.animalview.commonTools.Log;
@@ -201,6 +202,7 @@ public class Tools {
             inputStream.close();
             bufferedInputStream.close();
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return bitmap;
     }
@@ -223,6 +225,7 @@ public class Tools {
             inputStream.close();
             bufferedInputStream.close();
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return bitmap;
     }
@@ -760,7 +763,7 @@ public class Tools {
         List<ZipEntry> list = new ArrayList<>();
         try {
             ZipFile zipFile = new ZipFile(file);
-            Enumeration<ZipEntry> enu = (Enumeration<ZipEntry>) zipFile.entries();
+            Enumeration<ZipEntry> enu = zipFile.getEntries();
             list = Collections.list(enu);
         } catch (Exception e) {
             e.printStackTrace();

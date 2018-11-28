@@ -12,6 +12,9 @@ import com.jiaozhu.ahibernate.annotation.Column;
 import com.jiaozhu.ahibernate.annotation.Id;
 import com.jiaozhu.ahibernate.annotation.Table;
 
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipFile;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -19,8 +22,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import jiaozhu.com.animalview.commonTools.BackgroundExecutor;
 import jiaozhu.com.animalview.support.Constants;
