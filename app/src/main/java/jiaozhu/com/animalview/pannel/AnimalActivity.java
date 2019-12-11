@@ -146,6 +146,12 @@ public class AnimalActivity extends BaseAnimalActivity<File, AnimalActivity.Entr
             }
         })) {
             list.add(new Entry(temp));
+            Collections.sort(list, new Comparator<Entry>() {
+                @Override
+                public int compare(Entry a, Entry b) {
+                    return a.file.getPath().compareTo(b.file.getPath());
+                }
+            });
         }
         return list;
     }
